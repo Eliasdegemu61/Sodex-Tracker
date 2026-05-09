@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const accountId = searchParams.get('account_id');
     const cursor = searchParams.get('cursor');
-    const limit = searchParams.get('limit') || '500';
+    const limit = searchParams.get('limit') || '200';
 
     if (!accountId) {
       return NextResponse.json(
@@ -34,6 +34,19 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
+
+    // Fix: Sodex API omits next_cursor for limit >= 50
+    // We construct it manually from the last item: base64(created_at,symbol_id,position_id)
+    if (data.code === 0 && data.data?.length >= Number(limit) && !data.meta?.next_cursor) {
+      const positions = data.data;
+      const last = positions[positions.length - 1];
+      if (last && last.created_at && last.symbol_id && last.position_id) {
+        if (!data.meta) data.meta = {};
+        data.meta.next_cursor = Buffer.from(`${last.created_at},${last.symbol_id},${last.position_id}`).toString('base64');
+        console.log(`[perps/positions] Manually constructed cursor for ${accountId}:`, data.meta.next_cursor);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error('[perps/positions] Fetch error:', error);

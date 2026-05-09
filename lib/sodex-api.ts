@@ -104,7 +104,7 @@ export async function fetchPositions(
   console.log('[STRICT-ID] API Fetch Positions:', accountId, 'Cursor:', cursor);
   const url = new URL('/api/perps/positions', window.location.origin);
   url.searchParams.append('account_id', String(accountId));
-  url.searchParams.append('limit', '500');
+  url.searchParams.append('limit', '200');
   if (cursor) {
     url.searchParams.append('cursor', cursor);
   }
@@ -134,9 +134,21 @@ export async function fetchPositions(
         throw new Error(`API error: ${data.message}`);
       }
 
+      const positions = data.data || [];
+      let nextCursor = data.meta?.next_cursor;
+
+      // Client-side fallback: Construct manual cursor if missing but we likely have more results
+      if (!nextCursor && positions.length >= 200) {
+        const last = positions[positions.length - 1];
+        if (last && last.created_at && last.symbol_id && last.position_id) {
+          nextCursor = btoa(`${last.created_at},${last.symbol_id},${last.position_id}`);
+          console.log('[STRICT-ID] Client-side manual cursor construction:', nextCursor);
+        }
+      }
+
       return {
-        positions: data.data || [],
-        nextCursor: data.meta?.next_cursor,
+        positions,
+        nextCursor,
       };
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') throw err;
