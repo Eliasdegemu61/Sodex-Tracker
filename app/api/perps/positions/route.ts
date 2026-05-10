@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const accountId = searchParams.get('account_id');
     const cursor = searchParams.get('cursor');
-    const limit = searchParams.get('limit') || '200';
+    const limit = searchParams.get('limit') || '500';
 
     if (!accountId) {
       return NextResponse.json(

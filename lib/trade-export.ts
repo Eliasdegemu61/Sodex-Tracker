@@ -52,7 +52,7 @@ export async function fetchAllTrades(
       ? '/api/spot/trades'
       : '/api/perps/trades';
 
-  const limit = 200;
+  const limit = 500;
   let cursor = initialCursor;
   
   // Use a map to track trade_ids and avoid duplicates
