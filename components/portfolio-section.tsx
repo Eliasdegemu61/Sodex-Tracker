@@ -64,12 +64,12 @@ export function PortfolioSection() {
 
   return (
     <>
-      <div className="space-y-5 text-foreground">
-        <div className="rounded-[2rem] border border-black/8 bg-white px-5 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="space-y-3 text-foreground md:space-y-5">
+        <div className="rounded-xl border border-black/8 bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7 md:py-5 md:rounded-[2rem]">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-[-0.04em] text-foreground md:text-3xl">Portfolio</h1>
+                <h1 className="text-lg font-semibold tracking-[-0.04em] text-foreground md:text-3xl">Portfolio</h1>
                 <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
                   Live
                 </span>
@@ -100,7 +100,7 @@ export function PortfolioSection() {
 
         <PortfolioOverview />
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-5">
           <div className="h-full xl:col-span-3">
             <PnLChart />
           </div>
@@ -113,7 +113,7 @@ export function PortfolioSection() {
 
         <PositionsTable />
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-2">
           {walletAddress && <AssetFlowCard walletAddress={sourceWalletAddress || walletAddress} />}
           {walletAddress && <FundFlowTable walletAddress={sourceWalletAddress || walletAddress} />}
         </div>

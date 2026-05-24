@@ -426,7 +426,7 @@ export default function Dashboard() {
 
           {/* Page Content */}
           <main className={cn(
-            "flex-1 overflow-y-auto scroll-smooth p-6",
+            "flex-1 overflow-y-auto scroll-smooth p-3 sm:p-4 md:p-6",
             "lg:max-w-[1600px] lg:mx-auto w-full"
           )}>
             {/* Conditional Rendering of Tabs */}

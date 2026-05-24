@@ -172,7 +172,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
   }, [chartData, hasData]);
 
   return (
-    <Card className="flex h-full flex-col rounded-[2rem] border border-black/8 bg-white p-3 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-5">
+    <Card className="flex h-full flex-col rounded-xl border border-black/8 bg-white p-3 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-5 md:rounded-[2rem]">
       <div className="mb-6 shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">
@@ -201,7 +201,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
         </div>
       </div>
 
-      <div className="relative flex min-h-[360px] flex-1 items-center justify-center">
+      <div className="relative flex min-h-[260px] flex-1 items-center justify-center md:min-h-[360px]">
         {!hasData ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-black/10 bg-black/[0.02] transition-colors dark:border-white/10 dark:bg-white/[0.02]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/30 dark:text-white/30">No data available</p>

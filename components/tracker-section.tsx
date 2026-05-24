@@ -268,9 +268,9 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-[1.5rem] border border-black/8 bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-10">
-          <div className="mb-6 text-center sm:text-left md:mb-8">
-            <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground md:text-4xl">Tracker</h2>
+        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-xl border border-black/8 bg-white p-4 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-10">
+          <div className="mb-4 text-center sm:text-left md:mb-8">
+            <h2 className="mb-1 text-lg font-bold tracking-tight text-foreground md:text-4xl">Tracker</h2>
             <p className="text-[10px] font-medium tracking-wider text-muted-foreground/60 md:text-sm">{loadingMessage}</p>
           </div>
 
@@ -336,10 +336,10 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
   if (!activePortfolio) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-[1.5rem] md:rounded-[2rem] border border-black/8 bg-white p-6 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-xl md:rounded-[2rem] border border-black/8 bg-white p-4 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
           
-          <div className="mb-6 md:mb-8 text-center sm:text-left">
-            <h2 className="mb-1 text-2xl md:text-4xl font-bold tracking-tight text-foreground">Tracker</h2>
+          <div className="mb-4 md:mb-8 text-center sm:text-left">
+            <h2 className="mb-1 text-lg md:text-4xl font-bold tracking-tight text-foreground">Tracker</h2>
             <p className="text-[10px] md:text-sm font-medium text-muted-foreground/60 tracking-wider">monitor performance and flows for any address</p>
           </div>
 
@@ -384,13 +384,13 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
       initialIsHistoryLoading={activePortfolio.isHistoryLoading}
       initialHistoryCursor={activePortfolio.nextCursor}
     >
-      <div className="space-y-5">
-        <div className="rounded-[2rem] border border-black/8 bg-white px-5 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <div className="space-y-3 md:space-y-5">
+        <div className="rounded-xl border border-black/8 bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7 md:py-5 md:rounded-[2rem]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-semibold tracking-[-0.04em] md:text-3xl">Tracker</h2>
+                <h2 className="text-lg font-semibold tracking-[-0.04em] md:text-3xl">Tracker</h2>
                 <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
                   Live
                 </span>
@@ -414,7 +414,7 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
 
         <PortfolioOverview />
         
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-5">
           <div className="h-full xl:col-span-3">
             <PnLChart />
           </div>
@@ -425,7 +425,7 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
 
         <OpenPositions />
         <PositionsTable />
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-2">
           <AssetFlowCard walletAddress={activePortfolio.walletAddress} />
           <FundFlowTable walletAddress={activePortfolio.walletAddress} />
         </div>
@@ -436,7 +436,7 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
 
 export function TrackerSection({ initialSearchAddress }: { initialSearchAddress?: string }) {
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="mx-auto w-full max-w-[1800px] px-0 py-1 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <TrackerContent initialSearchAddress={initialSearchAddress} />
     </div>
   );

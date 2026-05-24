@@ -277,12 +277,12 @@ export function PortfolioOverview() {
   ];
 
   return (
-    <Card className="relative overflow-hidden rounded-[2rem] border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="p-3 sm:p-5 md:p-8">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <Card className="relative overflow-hidden rounded-xl border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem]">
+      <div className="p-3 md:p-8">
+        <div className="mb-4 flex flex-col gap-3 md:mb-6 md:flex-row md:items-end md:justify-between md:gap-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-black/35 dark:text-white/35">Portfolio</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground md:text-3xl">
+            <h2 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground md:text-3xl">
               Overview
             </h2>
           </div>
@@ -341,9 +341,59 @@ export function PortfolioOverview() {
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <div className="md:hidden">
           <div className={cn(
-            "relative overflow-hidden rounded-[1.5rem] border p-5",
+            "relative overflow-hidden rounded-xl border p-3",
+            isAccountProfit
+              ? "border-green-500/20 bg-green-500/[0.045]"
+              : "border-red-500/20 bg-red-500/[0.045]"
+          )}>
+            <div className={cn(
+              "absolute inset-y-3 left-0 w-1 rounded-r-full",
+              isAccountProfit ? "bg-green-500" : "bg-red-500"
+            )} />
+            <div className="pl-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">Account PnL</p>
+                  <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                    <p className={cn("text-2xl font-semibold tracking-[-0.05em]", isAccountProfit ? "text-green-400" : "text-red-400")}>
+                      {accountPnl >= 0 ? '+' : ''}{formatCurrency(accountPnl, 2)}
+                    </p>
+                    <span className={cn("rounded-full px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em]", isAccountProfit ? "bg-green-500/12 text-green-400" : "bg-red-500/12 text-red-400")}>
+                      {accountPnlPercent >= 0 ? '+' : ''}{accountPnlPercent.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:text-white/35">Net worth</p>
+                  <p className="mt-1 text-xl font-semibold tracking-[-0.04em] text-foreground">{formatCurrency(totalNetWorth)}</p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {[
+                  ...tradingStats,
+                  { label: 'Futures', value: formatCurrency(balances.futures), icon: <Activity className="h-3.5 w-3.5" />, tone: 'text-foreground' },
+                  { label: 'Spot', value: formatCurrency(balances.spot), icon: <Wallet className="h-3.5 w-3.5" />, tone: 'text-foreground' },
+                  { label: 'Vault bal.', value: formatCurrency(balances.vault), icon: <Layers3 className="h-3.5 w-3.5" />, tone: 'text-foreground' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-lg border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35">{item.label}</p>
+                      <span className="text-black/30 dark:text-white/35">{item.icon}</span>
+                    </div>
+                    <p className={cn("mt-1 truncate text-sm font-semibold tracking-[-0.03em]", item.tone)}>{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden gap-3 md:grid md:gap-4 xl:grid-cols-[1.35fr_1fr]">
+          <div className={cn(
+            "relative overflow-hidden rounded-xl border p-4 md:p-5 md:rounded-[1.5rem]",
             isAccountProfit
               ? "border-green-500/20 bg-green-500/[0.045]"
               : "border-red-500/20 bg-red-500/[0.045]"
@@ -355,11 +405,11 @@ export function PortfolioOverview() {
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="pl-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Account PnL</p>
-                <div className="mt-3 flex flex-wrap items-baseline gap-3">
-                  <p className={cn("text-4xl font-semibold tracking-[-0.05em] md:text-5xl", isAccountProfit ? "text-green-400" : "text-red-400")}>
+                <div className="mt-2 flex flex-wrap items-baseline gap-2 md:mt-3 md:gap-3">
+                  <p className={cn("text-2xl font-semibold tracking-[-0.05em] md:text-5xl", isAccountProfit ? "text-green-400" : "text-red-400")}>
                     {accountPnl >= 0 ? '+' : ''}{formatCurrency(accountPnl, 2)}
                   </p>
-                  <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]", isAccountProfit ? "bg-green-500/12 text-green-400" : "bg-red-500/12 text-red-400")}>
+                  <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] md:px-2.5 md:py-1 md:text-[10px]", isAccountProfit ? "bg-green-500/12 text-green-400" : "bg-red-500/12 text-red-400")}>
                     {accountPnlPercent >= 0 ? '+' : ''}{accountPnlPercent.toFixed(2)}%
                   </span>
                 </div>
@@ -368,43 +418,43 @@ export function PortfolioOverview() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-black/8 bg-white/55 p-4 dark:border-white/10 dark:bg-black/30 md:min-w-48">
+              <div className="rounded-xl border border-black/8 bg-white/55 p-3 dark:border-white/10 dark:bg-black/30 md:min-w-48 md:rounded-2xl md:p-4">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">Net worth</p>
                 {loading.balances && totalNetWorth === 0 ? (
                   <LoadingShimmer className="mt-3 h-8 w-28" />
                 ) : (
-                  <p className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-foreground">{formatCurrency(totalNetWorth)}</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground md:text-3xl">{formatCurrency(totalNetWorth)}</p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+          <div className="grid gap-2 sm:grid-cols-3 md:gap-3 xl:grid-cols-1">
             {tradingStats.map((item) => (
-              <div key={item.label} className="rounded-[1.5rem] border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+              <div key={item.label} className="rounded-xl border border-black/8 bg-black/[0.02] p-3 dark:border-white/10 dark:bg-white/[0.03] md:rounded-[1.5rem] md:p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">{item.label}</p>
                   <span className="text-black/35 dark:text-white/35">{item.icon}</span>
                 </div>
-                <p className={cn("mt-3 truncate text-xl font-semibold tracking-[-0.04em]", item.tone)}>{item.value}</p>
+                <p className={cn("mt-2 truncate text-lg font-semibold tracking-[-0.04em] md:mt-3 md:text-xl", item.tone)}>{item.value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-3 hidden gap-2 md:mt-4 md:grid md:gap-3 md:grid-cols-3">
           {[
             { label: 'Futures balance', value: balances.futures, loading: loading.balances, icon: <Activity className="h-4 w-4" /> },
             { label: 'Spot balance', value: balances.spot, loading: loading.balances, icon: <Wallet className="h-4 w-4" /> },
             { label: 'Vault balance', value: balances.vault, loading: loading.vault, icon: <Layers3 className="h-4 w-4" /> },
           ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-black/8 bg-black/[0.02] p-4 dark:border-white/8 dark:bg-white/[0.02]">
+            <div key={item.label} className="flex items-center justify-between gap-3 rounded-xl border border-black/8 bg-black/[0.02] p-3 dark:border-white/8 dark:bg-white/[0.02] md:gap-4 md:rounded-[1.25rem] md:p-4">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-black/35 dark:text-white/35">{item.label}</p>
                 {item.loading && item.value === 0 ? (
-                  <LoadingShimmer className="mt-3 h-6 w-20" />
+                  <LoadingShimmer className="mt-2 h-5 w-20 md:mt-3 md:h-6" />
                 ) : (
-                  <p className="mt-2 text-lg font-medium text-foreground">{formatCurrency(item.value)}</p>
+                  <p className="mt-1 text-base font-medium text-foreground md:mt-2 md:text-lg">{formatCurrency(item.value)}</p>
                 )}
               </div>
               <span className="text-black/25 dark:text-white/25">{item.icon}</span>

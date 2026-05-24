@@ -139,63 +139,64 @@ export function MonthlyCalendar() {
   };
 
   return (
-    <Card className="overflow-hidden rounded-[2rem] border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="border-b border-black/8 p-4 dark:border-white/10 sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+    <Card className="overflow-hidden rounded-xl border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem]">
+      <div className="border-b border-black/8 p-3 dark:border-white/10 sm:p-5 lg:p-6">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Daily PnL</p>
-            <h3 className="mt-1 select-none text-2xl font-semibold tracking-[-0.04em] text-foreground sm:text-3xl">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/35 dark:text-white/35 sm:text-[10px]">Daily PnL</p>
+            <h3 className="mt-1 select-none text-xl font-semibold tracking-[-0.04em] text-foreground sm:text-2xl lg:text-3xl">
               {currentDate.toLocaleDateString('en-US', { month: 'long' })} {currentDate.getFullYear()}
             </h3>
           </div>
 
-          <div className="flex w-fit items-center gap-2 rounded-2xl border border-black/10 bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex w-fit shrink-0 items-center gap-1 rounded-xl border border-black/10 bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:gap-2">
             <button
               onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
-              className="rounded-xl p-2 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
               aria-label="Previous month"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
             <div className="mx-1 h-4 w-px bg-black/10 dark:bg-white/10" />
             <button
               onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
-              className="rounded-xl p-2 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
               aria-label="Next month"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-5">
+        <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2 lg:grid-cols-5">
           {[
             { label: 'Net', value: formatPnL(monthStats.totalPnL), tone: monthStats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500' },
             { label: 'Win rate', value: `${monthStats.winRate.toFixed(0)}%`, tone: 'text-foreground' },
             { label: 'Active', value: `${monthStats.activeDays} days`, tone: 'text-foreground' },
-            { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-green-500' },
-            { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-red-500' },
+            { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-green-500', desktopOnly: true },
+            { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-red-500', desktopOnly: true },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-black/8 bg-black/[0.025] p-3 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:text-white/35">{stat.label}</p>
-              <p className={`mt-1 truncate text-sm font-semibold tracking-[-0.03em] ${stat.tone}`}>{stat.value}</p>
+            <div key={stat.label} className={`rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:p-3 ${stat.desktopOnly ? 'hidden lg:block' : ''}`}>
+              <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35 sm:text-[8px] sm:tracking-[0.16em]">{stat.label}</p>
+              <p className={`mt-1 truncate text-xs font-semibold tracking-[-0.03em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="p-4 sm:p-6">
-        <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:overflow-visible sm:px-0">
-          <div className="min-w-[620px] sm:min-w-0">
-            <div className="mb-2 grid grid-cols-7 gap-2">
+      <div className="p-3 sm:p-5 lg:p-6">
+        <div>
+          <div>
+            <div className="mb-1.5 grid grid-cols-7 gap-1 sm:mb-2 sm:gap-2">
               {weekDays.map((d) => (
-                <div key={d} className="py-2 text-center text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">
-                  {d}
+                <div key={d} className="py-1.5 text-center text-[8px] font-semibold uppercase tracking-[0.12em] text-black/35 dark:text-white/35 sm:py-2 sm:text-[9px] sm:tracking-[0.18em]">
+                  <span className="sm:hidden">{d[0]}</span>
+                  <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {calendarDays.map((dayObj, idx) => {
                 const { date, isCurrentMonth } = dayObj;
                 const dayTrades = isCurrentMonth ? getDayPnL(date) : null;
@@ -210,7 +211,7 @@ export function MonthlyCalendar() {
                   date.getFullYear() === now.getFullYear();
 
                 const baseCell =
-                  'relative flex aspect-[1.22/1] flex-col justify-between rounded-2xl border p-2.5 transition-all duration-200';
+                  'relative flex aspect-square flex-col justify-between rounded-lg border p-1.5 transition-all duration-200 sm:aspect-[1.22/1] sm:rounded-2xl sm:p-2.5';
                 const mutedCell = !isCurrentMonth
                   ? 'border-black/6 bg-black/[0.015] opacity-35 dark:border-white/6 dark:bg-white/[0.015]'
                   : isToday
@@ -228,11 +229,11 @@ export function MonthlyCalendar() {
                         {date.getDate()}
                       </span>
                       {hasActivity && (
-                        <span className={`h-1.5 w-1.5 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
                       )}
                     </div>
                     {hasActivity && isCurrentMonth && dayTrades && (
-                      <p className={`truncate text-right text-[10px] font-bold tabular-nums ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                      <p className={`hidden truncate text-right text-[9px] font-bold tabular-nums min-[380px]:block sm:text-[10px] ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
                         {formatPnL(dayTrades.pnl, Math.abs(dayTrades.pnl) >= 100 ? 0 : 2)}
                       </p>
                     )}
