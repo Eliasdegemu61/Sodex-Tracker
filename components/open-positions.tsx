@@ -1,16 +1,13 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight, AlertCircle, ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 import { usePortfolio } from '@/context/portfolio-context';
-import { useMemo, useState, useEffect, useRef } from 'react';
-import { fetchOpenPositions, fetchAccountDetails, type OpenPositionData, type BalanceData, type OpenOrderData } from '@/lib/sodex-api';
+import { useMemo, useState, useEffect } from 'react';
+import { fetchAccountDetails, fastPerpsStateToAccountDetails, type OpenPositionData, type BalanceData, type OpenOrderData } from '@/lib/sodex-api';
 import { cacheManager } from '@/lib/cache';
-import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { getTokenLogo } from '@/lib/token-logos';
-import { Clock, Target, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 export function OpenPositions({ accountId }: { accountId?: string | null }) {
   const portfolio = usePortfolio();
@@ -24,18 +21,19 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const historyRef = useRef<{ [key: string]: { time: string; pnl: number }[] }>({});
 
-  const toggleExpand = (id: string) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
+  useEffect(() => {
+    const perpsState = portfolio?.fastAccountState?.perps;
+    if (!perpsState) return;
+
+    const accountData = fastPerpsStateToAccountDetails(perpsState);
+
+    setOpenPositions(accountData.positions);
+    setBalanceData(accountData.balances[0] || null);
+    setOpenOrders(accountData.openOrders || []);
+    setLastUpdateTime(new Date().toLocaleTimeString());
+    setError(null);
+  }, [portfolio?.fastAccountState]);
 
   const loadOpenPositions = async (skipCache = false) => {
     if (!userId) return;
@@ -47,22 +45,6 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
 
       const accountData = await fetchAccountDetails(userId);
       const positions = accountData.positions;
-
-      // Update PnL history for each position
-      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-      positions.forEach(pos => {
-        const pId = pos.symbol + pos.positionSide; // Use symbol+side as unique key for history tracking
-        const currentPnl = parseFloat(pos.unrealizedProfit);
-
-        if (!historyRef.current[pId]) {
-          historyRef.current[pId] = [];
-        }
-
-        // Keep last 30 points
-        const newHistory = [...historyRef.current[pId], { time: now, pnl: currentPnl }].slice(-30);
-        historyRef.current[pId] = newHistory;
-      });
 
       setOpenPositions(positions);
       setBalanceData(accountData.balances[0] || null);
@@ -79,7 +61,7 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
   useEffect(() => {
     if (!userId) return;
 
-    setIsLoading(true);
+    setIsLoading(openPositions.length === 0);
     // Clear cache before initial fetch to get fresh data on page load
     cacheManager.delete(`accountDetails_${userId}`);
     console.log('[v0] Cleared cache for fresh data on page load');
@@ -128,7 +110,6 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
         realized: parseFloat(position.realizedProfit),
         fee: parseFloat(position.cumTradingFee),
         createdAt: new Date(position.createdTime).toLocaleString(),
-        history: historyRef.current[pId] || [],
         tp: tp,
         sl: sl,
         positionId: position.positionId,
@@ -147,6 +128,33 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
   const totalMarginInUse = useMemo(() => {
     return displayPositions.reduce((sum, pos) => sum + pos.margin, 0);
   }, [displayPositions]);
+
+  const openStats = useMemo(() => {
+    const totalUnrealized = displayPositions.reduce((sum, pos) => sum + pos.unrealized, 0);
+    const totalFees = displayPositions.reduce((sum, pos) => sum + pos.fee, 0);
+    const notional = displayPositions.reduce((sum, pos) => sum + Math.abs(pos.size * pos.entry), 0);
+    const longCount = displayPositions.filter((pos) => pos.side === 'LONG').length;
+    const shortCount = displayPositions.length - longCount;
+    const avgLeverage = totalMarginInUse > 0 ? notional / totalMarginInUse : 0;
+
+    return { totalUnrealized, totalFees, notional, longCount, shortCount, avgLeverage };
+  }, [displayPositions, totalMarginInUse]);
+
+  const formatCurrency = (value: number, decimals = 2) => {
+    const sign = value < 0 ? '-' : '';
+    return `${sign}$${Math.abs(value).toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })}`;
+  };
+
+  const formatPrice = (value: number) => {
+    if (!Number.isFinite(value) || value <= 0) return '--';
+    return `$${value.toLocaleString(undefined, {
+      minimumFractionDigits: value >= 100 ? 2 : 4,
+      maximumFractionDigits: value >= 100 ? 2 : 4,
+    })}`;
+  };
 
   const handleRowsPerPageChange = (newRows: number) => {
     setRowsPerPage(newRows);
@@ -208,147 +216,142 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
   }
 
   return (
-    <Card className="overflow-hidden rounded-[2rem] border border-black/8 bg-white p-3 sm:p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-[10px] font-bold text-black/35 dark:text-white/35 uppercase tracking-[0.22em]">Open positions</h3>
-          <div className="flex h-5 w-5 items-center justify-center rounded-full border border-black/12 bg-black/[0.03] dark:border-white/12 dark:bg-white/[0.03]">
-            <div className="h-1.5 w-1.5 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
+    <Card className="overflow-hidden rounded-[2rem] border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+      <div className="border-b border-black/8 p-4 dark:border-white/10 sm:p-6">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Open positions</h3>
+              <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-green-500">
+                {displayPositions.length} live
+              </span>
+              {isRefreshing && <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-500" />}
+            </div>
+            <p className="mt-2 text-sm leading-5 text-muted-foreground/60">
+              Live perps exposure, margin, liquidation risk, and unrealized PnL.
+            </p>
           </div>
+
+          {lastUpdateTime && (
+            <span className="shrink-0 text-[9px] font-medium uppercase tracking-[0.16em] text-black/30 dark:text-white/30">
+              Sync {lastUpdateTime}
+            </span>
+          )}
         </div>
-        {lastUpdateTime && (
-          <span className="text-[9px] font-medium text-black/30 dark:text-white/30 uppercase tracking-[0.16em]">
-            Sync: {lastUpdateTime}
-          </span>
-        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
+          {[
+            { label: 'Unrealized', value: `${openStats.totalUnrealized >= 0 ? '+' : ''}${formatCurrency(openStats.totalUnrealized)}`, tone: openStats.totalUnrealized >= 0 ? 'text-green-500' : 'text-red-500' },
+            { label: 'Notional', value: formatCurrency(openStats.notional, 0), tone: 'text-foreground' },
+            { label: 'Margin used', value: formatCurrency(totalMarginInUse), tone: 'text-foreground' },
+            { label: 'Avg lev.', value: `${openStats.avgLeverage.toFixed(1)}x`, tone: 'text-foreground' },
+            { label: 'Long / Short', value: `${openStats.longCount} / ${openStats.shortCount}`, tone: 'text-foreground' },
+            { label: 'Available', value: balanceData ? formatCurrency(parseFloat(balanceData.availableBalance)) : '--', tone: 'text-green-500' },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-2xl border border-black/8 bg-black/[0.025] p-3 dark:border-white/10 dark:bg-white/[0.03]">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:text-white/35">{stat.label}</p>
+              <p className={`mt-1 truncate text-sm font-semibold tracking-[-0.03em] sm:text-base ${stat.tone}`}>{stat.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Balance Info */}
-      {balanceData && (
-        <div className="grid grid-cols-3 gap-2 mb-8">
-          <div className="space-y-1 rounded-2xl border border-black/8 bg-black/[0.03] p-2 md:p-4 dark:border-white/8 dark:bg-white/[0.03]">
-            <p className="text-[7px] font-medium text-black/35 dark:text-white/35 uppercase tracking-[0.18em]">Wallet balance</p>
-            <p className="text-sm font-semibold tracking-[-0.03em] text-foreground md:text-xl">${parseFloat(balanceData.walletBalance).toFixed(2)}</p>
-            <p className="hidden text-[7px] font-semibold uppercase tracking-[0.16em] text-black/20 dark:text-white/20 sm:block">perpetuals (usdc)</p>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1040px] border-collapse text-left">
+          <thead>
+            <tr className="border-b border-black/8 bg-black/[0.025] text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35">
+              <th className="px-4 py-3">Market</th>
+              <th className="px-4 py-3">Side</th>
+              <th className="px-4 py-3 text-right">Size</th>
+              <th className="px-4 py-3 text-right">Entry</th>
+              <th className="px-4 py-3 text-right">Mark risk</th>
+              <th className="px-4 py-3 text-right">Margin</th>
+              <th className="px-4 py-3 text-right">Lev.</th>
+              <th className="px-4 py-3 text-right">Unrealized</th>
+              <th className="px-4 py-3 text-right">TP / SL</th>
+              <th className="px-4 py-3 text-right">Fees</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedPositions.map((pos) => {
+              const isProfit = pos.unrealized >= 0;
+              const logo = getTokenLogo(pos.symbol);
+
+              return (
+                <tr key={pos.id} className="border-b border-black/6 transition-colors hover:bg-black/[0.025] dark:border-white/8 dark:hover:bg-white/[0.035]">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/8 bg-black/[0.03] dark:border-white/10 dark:bg-white/[0.04]">
+                        {logo ? (
+                          <img src={logo} alt={pos.symbol} className="h-5 w-5 object-contain" />
+                        ) : (
+                          <span className="text-xs font-semibold text-muted-foreground">{pos.symbol.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-foreground">{pos.symbol}</p>
+                        <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-muted-foreground/45">#{pos.positionId} · {pos.margin_type}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${pos.side === 'LONG' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {pos.side}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{formatPrice(pos.entry)}</td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-red-500/80">{formatPrice(pos.liquidation)}</td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{formatCurrency(pos.margin)}</td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{pos.leverage}x</td>
+                  <td className={`px-4 py-4 text-right text-sm font-semibold tabular-nums ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                    {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
+                  </td>
+                  <td className="px-4 py-4 text-right text-[10px] font-semibold tabular-nums text-muted-foreground">
+                    <span className="text-green-500/80">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
+                    <span className="mx-1 text-muted-foreground/25">/</span>
+                    <span className="text-red-500/80">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
+                  </td>
+                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-muted-foreground">{formatCurrency(pos.fee)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-col gap-3 border-t border-black/8 p-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            {[10, 25, 50].map((count) => (
+              <button
+                key={count}
+                onClick={() => handleRowsPerPageChange(count)}
+                className={`rounded-lg px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  rowsPerPage === count
+                    ? 'bg-foreground text-background'
+                    : 'bg-black/[0.04] text-muted-foreground hover:text-foreground dark:bg-white/[0.06]'
+                }`}
+              >
+                {count}
+              </button>
+            ))}
           </div>
-          <div className="space-y-1 rounded-2xl border border-green-500/18 bg-green-500/8 p-2 md:p-4">
-            <p className="text-[7px] font-medium text-black/35 dark:text-white/35 uppercase tracking-[0.18em]">Liquidity</p>
-            <p className="text-sm font-semibold tracking-[-0.03em] text-green-400 md:text-xl">${parseFloat(balanceData.availableBalance).toFixed(2)}</p>
-            <p className="hidden text-[7px] font-semibold uppercase tracking-[0.16em] text-black/20 dark:text-white/20 sm:block">Available to trade</p>
-          </div>
-          <div className="space-y-1 rounded-2xl border border-black/8 bg-black/[0.03] p-2 md:p-4 dark:border-white/8 dark:bg-white/[0.03]">
-            <p className="text-[7px] font-medium text-black/35 dark:text-white/35 uppercase tracking-[0.18em]">Exposure</p>
-            <p className="text-sm font-semibold tracking-[-0.03em] text-foreground md:text-xl">${totalMarginInUse.toFixed(2)}</p>
-            <p className="hidden text-[7px] font-semibold uppercase tracking-[0.16em] text-black/20 dark:text-white/20 sm:block">Margin in use</p>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/50">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline" size="sm" className="h-8 rounded-xl px-2">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline" size="sm" className="h-8 rounded-xl px-2">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Grid of Position Cards (Unified Design) */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {paginatedPositions.map((pos) => {
-          const isProfit = pos.unrealized >= 0;
-          return (
-            <Card key={pos.id} className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] transition-all hover:bg-white/[0.05]">
-              <div className={`absolute right-0 top-0 h-32 w-32 blur-[60px] opacity-10 transition-colors ${isProfit ? 'bg-green-500' : 'bg-red-500'}`} />
-
-              <div className="p-4 md:p-5 space-y-3">
-                {/* Top row: token info + PnL */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] md:h-10 md:w-10">
-                      {getTokenLogo(pos.symbol) ? (
-                        <img
-                          src={getTokenLogo(pos.symbol)}
-                          alt={pos.symbol}
-                          className="w-5 h-5 md:w-6 md:h-6 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xs font-semibold text-white/45">{pos.symbol.charAt(0)}</span>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="truncate text-xs font-semibold tracking-tight text-white md:text-sm">{pos.symbol}</h3>
-                        <span className={`shrink-0 rounded px-1 py-0.5 text-[7px] font-semibold uppercase tracking-[0.18em] md:text-[8px] ${pos.side === 'LONG' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                          {pos.side} {pos.leverage}x
-                        </span>
-                      </div>
-                      <p className="text-[8px] text-white/28">#{pos.positionId}</p>
-                    </div>
-                  </div>
-
-                  {/* Minimal Graph */}
-                  <div className="flex-1 h-8 md:h-10 mx-2 md:mx-4 max-w-[80px] md:max-w-[120px] opacity-70 hover:opacity-100 transition-opacity">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={pos.history}>
-                        <defs>
-                          <linearGradient id={`pnlGradient-${pos.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={isProfit ? '#4ade80' : '#f87171'} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={isProfit ? '#4ade80' : '#f87171'} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Area
-                          type="monotone"
-                          dataKey="pnl"
-                          stroke={isProfit ? '#4ade80' : '#f87171'}
-                          strokeWidth={1.5}
-                          fillOpacity={1}
-                          fill={`url(#pnlGradient-${pos.id})`}
-                          isAnimationActive={false}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <p className={`text-base font-semibold tracking-[-0.03em] md:text-xl ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                      {isProfit ? '+' : ''}${Math.abs(pos.unrealized).toFixed(2)}
-                    </p>
-                    <p className="mt-0.5 text-[7px] font-medium text-white/30 dark:text-white/30 uppercase tracking-[0.18em] md:text-[8px]">unrealized pnl</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { label: 'entry', val: `$${pos.entry.toFixed(2)}` },
-                    { label: 'size', val: pos.size.toFixed(4) },
-                    { label: 'margin', val: `$${pos.margin.toFixed(2)}`, color: 'text-primary/70' },
-                    { label: 'liq. price', val: `$${pos.liquidation.toFixed(2)}`, color: 'text-red-500/70' }
-                  ].map((stat, i) => (
-                    <div key={i} className="rounded-2xl border border-white/8 bg-white/[0.03] p-2.5">
-                      <p className="mb-0.5 text-[7px] font-semibold uppercase tracking-[0.18em] leading-none text-white/35">{stat.label}</p>
-                      <p className={`truncate text-[10px] font-semibold ${stat.color || 'text-white'}`}>{stat.val}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-1">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl border border-green-500/18 bg-green-500/[0.06] p-2.5">
-                      <p className="mb-1 text-[6px] font-semibold uppercase tracking-[0.16em] text-green-300/70">take profit</p>
-                      <p className="text-[10px] font-semibold text-white">{pos.tp === "None" ? 'none' : `$${pos.tp}`}</p>
-                    </div>
-                    <div className="rounded-2xl border border-red-500/18 bg-red-500/[0.06] p-2.5">
-                      <p className="mb-1 text-[6px] font-semibold uppercase tracking-[0.16em] text-red-300/70">stop loss</p>
-                      <p className="text-[10px] font-semibold text-white">{pos.sl === "None" ? 'none' : `$${pos.sl}`}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-white/8 pt-4 text-[8px] font-semibold text-white/25">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5"><Clock className="w-2.5 h-2.5" /> {pos.createdAt.split(',')[1]}</span>
-                    <span className="opacity-50">fees: ${pos.fee.toFixed(2)}</span>
-                  </div>
-                  <span className="rounded bg-white/[0.04] px-1.5 py-0.5">{pos.margin_type}</span>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-
     </Card>
   );
 }

@@ -17,7 +17,6 @@ import {
   User,
   Send,
   BookOpen,
-  LineChart,
   CandlestickChart,
   MessageSquare,
   Coins,
@@ -73,7 +72,6 @@ export function SidebarNav({ currentPage, onNavigate }: SidebarNavProps) {
   const betaItems = [
     { id: 'journal', label: 'Journal', icon: BookOpen },
     { id: 'demo-trading', label: 'Demo Trading', icon: CandlestickChart },
-    { id: 'analytics', label: 'Trade analytics', icon: LineChart },
   ]
 
   const { theme, toggleTheme } = useTheme()

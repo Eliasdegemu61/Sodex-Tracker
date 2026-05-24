@@ -99,12 +99,13 @@ export async function getUserIdByAddress(address: string): Promise<string> {
 export async function fetchPositions(
   accountId: string | number,
   cursor?: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  limit: number = 1000
 ): Promise<{ positions: PositionData[]; nextCursor?: string }> {
   console.log('[STRICT-ID] API Fetch Positions:', accountId, 'Cursor:', cursor);
   const url = new URL('/api/perps/positions', window.location.origin);
   url.searchParams.append('account_id', String(accountId));
-  url.searchParams.append('limit', '500');
+  url.searchParams.append('limit', String(limit));
   if (cursor) {
     url.searchParams.append('cursor', cursor);
   }
@@ -138,7 +139,7 @@ export async function fetchPositions(
       let nextCursor = data.meta?.next_cursor;
 
       // Client-side fallback: Construct manual cursor if missing but we likely have more results
-      if (!nextCursor && positions.length >= 500) {
+      if (!nextCursor && positions.length >= limit) {
         const last = positions[positions.length - 1];
         if (last && last.created_at && last.symbol_id && last.position_id) {
           nextCursor = btoa(`${last.created_at},${last.symbol_id},${last.position_id}`);
@@ -169,7 +170,8 @@ export async function fetchAllPositions(
   minTimestamp?: number,
   signal?: AbortSignal,
   maxCount?: number,
-  initialCursor?: string
+  initialCursor?: string,
+  pageLimit: number = 1000
 ): Promise<{ positions: PositionData[]; nextCursor?: string }> {
   const allPositions: PositionData[] = [];
   let cursor: string | undefined = initialCursor;
@@ -182,7 +184,7 @@ export async function fetchAllPositions(
       throw abortError;
     }
 
-    const { positions, nextCursor } = await fetchPositions(accountId, cursor, signal);
+    const { positions, nextCursor } = await fetchPositions(accountId, cursor, signal, pageLimit);
     
     // Add new positions
     allPositions.push(...positions);
@@ -332,6 +334,98 @@ export interface BalanceData {
   availableBalance: string;
 }
 
+export interface FastSpotBalance {
+  i: number;
+  a: string;
+  t: string;
+  l: string;
+}
+
+export interface FastPerpsBalance {
+  i: number;
+  a: string;
+  wb: string;
+  mr: string;
+  px: string;
+  iw: string;
+  aw: string;
+  at: string;
+  wm: string;
+  am: string;
+}
+
+export interface FastPerpsPosition {
+  i: number;
+  s: string;
+  m: string;
+  ps: string;
+  sz: string;
+  ep: string;
+  iw: string;
+  co: string;
+  cf: string;
+  cc: string;
+  cp: string;
+  ms: string;
+  cr: string;
+  ur: string;
+  l: number;
+  lp: string;
+  ct: number;
+  ut: number;
+}
+
+export interface FastPerpsOrder {
+  s: string;
+  i: number;
+  S: string;
+  o: string;
+  p: string;
+  q: string;
+  X: string;
+  z: string;
+  ct: number;
+  ut: number;
+  R?: boolean;
+  ps?: string;
+}
+
+export interface FastSpotAccountState {
+  user: string;
+  aid: number;
+  uid: number;
+  B: FastSpotBalance[];
+  O: unknown[] | null;
+}
+
+export interface FastPerpsAccountState {
+  user: string;
+  aid: number;
+  uid: number;
+  av: string;
+  am: string;
+  ami: string;
+  amw: string;
+  im: string;
+  cm: string;
+  oim: string;
+  ocm: string;
+  B: FastPerpsBalance[];
+  P: FastPerpsPosition[];
+  O: FastPerpsOrder[] | null;
+  S?: Array<{ s: string; l: number; m: string }>;
+}
+
+export interface FastAccountState {
+  spot: FastSpotAccountState | null;
+  perps: FastPerpsAccountState | null;
+}
+
+export interface PnLDailyStat {
+  ts_ms: number;
+  pnl: string;
+}
+
 export interface TokenBalance {
   token: string;
   coin: string;
@@ -371,6 +465,98 @@ export interface AccountDetailsResponse {
   code: number;
   timestamp: number;
   data: AccountDetailsData;
+}
+
+async function fetchStateEndpoint<T>(path: string): Promise<T | null> {
+  const response = await fetch(path);
+  if (!response.ok) {
+    console.warn('[v0] Fast state endpoint failed:', path, response.statusText);
+    return null;
+  }
+
+  const result = await response.json();
+  if (result.code !== 0 || !result.data) {
+    console.warn('[v0] Fast state endpoint returned no data:', path, result.message || result.error);
+    return null;
+  }
+
+  return result.data as T;
+}
+
+export async function fetchFastAccountState(address: string): Promise<FastAccountState> {
+  const normalized = address.trim();
+  const [spot, perps] = await Promise.all([
+    fetchStateEndpoint<FastSpotAccountState>(`/api/spot/account-state?address=${encodeURIComponent(normalized)}`),
+    fetchStateEndpoint<FastPerpsAccountState>(`/api/perps/account-state?address=${encodeURIComponent(normalized)}`),
+  ]);
+
+  return { spot, perps };
+}
+
+export async function fetchPnLDailyStats(accountId: string | number): Promise<PnLDailyStat[]> {
+  const response = await fetch(`/api/perps/pnl-daily-stats?account_id=${accountId}`);
+  if (!response.ok) {
+    console.warn('[v0] Failed to fetch PnL daily stats:', response.statusText);
+    return [];
+  }
+
+  const result = await response.json();
+  if (result.code !== 0 || !Array.isArray(result.data?.items)) {
+    return [];
+  }
+
+  return result.data.items;
+}
+
+export function fastPerpsStateToAccountDetails(state: FastPerpsAccountState): AccountDetailsData {
+  const positions: OpenPositionData[] = (state.P || []).map((position) => {
+    const size = parseFloat(position.sz || '0');
+    const side = size < 0 ? 'SHORT' : 'LONG';
+
+    return {
+      symbol: position.s,
+      positionId: String(position.i),
+      contractType: 'PERPETUAL',
+      positionType: position.m,
+      positionSide: side,
+      positionSize: String(Math.abs(size)),
+      entryPrice: position.ep,
+      liquidationPrice: position.lp || '0',
+      isolatedMargin: position.iw || '0',
+      leverage: position.l || 1,
+      unrealizedProfit: position.ur || '0',
+      realizedProfit: position.cr || '0',
+      cumTradingFee: position.cf || '0',
+      createdTime: position.ct,
+      updatedTime: position.ut,
+    };
+  });
+
+  const usdcBalance = state.B?.find((balance) => balance.a === 'vUSDC') || state.B?.[0];
+
+  return {
+    positions,
+    balances: [
+      {
+        coin: usdcBalance?.a || 'vUSDC',
+        walletBalance: usdcBalance?.wb || state.av || '0',
+        openOrderMarginFrozen: state.oim || '0',
+        availableBalance: usdcBalance?.aw || state.am || '0',
+      },
+    ],
+    openOrders: (state.O || []).map((order) => ({
+      orderId: String(order.i),
+      symbol: order.s,
+      positionId: '',
+      triggerProfitPrice: order.R ? order.p : undefined,
+      triggerStopPrice: undefined,
+      ...order,
+    })),
+    isolatedMargin: state.im || '0',
+    crossMargin: state.cm || '0',
+    availableMarginForIsolated: state.ami || state.am || '0',
+    availableMarginForCross: state.amw || state.am || '0',
+  };
 }
 
 export async function fetchAccountDetails(userId: string | number): Promise<AccountDetailsData> {
@@ -719,7 +905,7 @@ export interface TokenBalance {
   balance: number;
 }
 
-export interface BalanceData {
+export interface DetailedBalanceSummary {
   totalUsdValue: number;
   tokens: TokenBalance[];
   futuresBalance: number;

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Unplug, Calendar, ChevronRight } from 'lucide-react';
+import { Loader2, Unplug } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { PortfolioOverview } from './portfolio-overview';
 import { PnLChart } from './pnl-chart';
@@ -14,64 +14,16 @@ import { FundFlowTable } from './fund-flow-table';
 import { AssetFlowCard } from './asset-flow-card';
 import { MonthlyCalendar } from './monthly-calendar';
 import { usePortfolio } from '@/context/portfolio-context';
-import { cn } from '@/lib/utils';
-
-// Loading Spinner Component
-function LoadingSpinner({ message, subMessage, onContinue, onAbort, isPaused, currentCount }: { 
-  message: string, 
-  subMessage?: string,
-  onContinue?: () => void,
-  onAbort?: () => void,
-  isPaused?: boolean,
-  currentCount?: number
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
-      <div className="relative">
-        <Loader2 className={cn("h-10 w-10 text-orange-500", !isPaused && "animate-spin")} />
-        {isPaused && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[8px] font-black uppercase text-orange-500">PAUSED</span>
-          </div>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <span className="block text-lg font-bold text-foreground italic uppercase tracking-tight">{message}</span>
-        {subMessage && (
-          <span className="block text-xs text-muted-foreground/60 max-w-md mx-auto">{subMessage}</span>
-        )}
-      </div>
-
-      {isPaused && (
-        <div className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 mt-4">
-          <div className="flex gap-3">
-            <Button onClick={onAbort} variant="outline" className="rounded-xl border-white/10 hover:bg-white/5 px-6 font-bold italic text-[10px] uppercase">
-              Show Current ({currentCount?.toLocaleString()})
-            </Button>
-            <Button onClick={onContinue} className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 gap-2 italic text-[10px] uppercase">
-              Continue <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export function PortfolioSection() {
   const {
     walletAddress,
     sourceWalletAddress,
     isLoading,
-    isPaused,
+    isHistoryLoading,
     fetchProgress,
-    timeframe,
-    setTimeframe,
     error,
     clearWalletAddress,
-    handleContinue,
-    handleAbortAndShow
   } = usePortfolio();
   const [showUnbindConfirm, setShowUnbindConfirm] = useState(false);
 
@@ -79,29 +31,6 @@ export function PortfolioSection() {
     clearWalletAddress();
     setShowUnbindConfirm(false);
   };
-
-  if (isLoading || isPaused) {
-    const loadingMessage = isPaused 
-      ? `Data limit reached` 
-      : `Syncing history... (${fetchProgress.count.toLocaleString()} records)`;
-    
-    const loadingSubMessage = isPaused
-      ? `Large history detected. You can view the current ${fetchProgress.count.toLocaleString()} records or continue indexing for full accuracy.`
-      : `Optimizing portfolio view for high-frequency data. This may take a moment for large accounts.`;
-
-    return (
-      <div className="flex items-center justify-center min-h-[500px]">
-        <LoadingSpinner 
-          message={loadingMessage} 
-          subMessage={loadingSubMessage}
-          isPaused={isPaused}
-          onContinue={handleContinue}
-          onAbort={handleAbortAndShow}
-          currentCount={fetchProgress.count}
-        />
-      </div>
-    );
-  }
 
   if (!walletAddress) {
     return (
@@ -136,16 +65,22 @@ export function PortfolioSection() {
   return (
     <>
       <div className="space-y-5 text-foreground">
-        <div className="rounded-[2.5rem] border border-black/8 bg-white px-6 py-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0 space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl italic uppercase">Portfolio</h1>
-                <div className="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">SYNCED</span>
-                </div>
+        <div className="rounded-[2rem] border border-black/8 bg-white px-5 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-semibold tracking-[-0.04em] text-foreground md:text-3xl">Portfolio</h1>
+                <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
+                  Live
+                </span>
+                {(isLoading || isHistoryLoading) && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-orange-500">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Syncing {fetchProgress.count ? fetchProgress.count.toLocaleString() : ''}
+                  </span>
+                )}
               </div>
-              <p className="max-w-3xl break-all text-xs font-mono text-muted-foreground/60">
+              <p className="mt-1 max-w-3xl break-all text-xs font-mono text-muted-foreground/55">
                 {walletAddress}
               </p>
             </div>
@@ -154,7 +89,7 @@ export function PortfolioSection() {
               <Button
                 variant="outline"
                 onClick={() => setShowUnbindConfirm(true)}
-                className="h-10 whitespace-nowrap rounded-2xl border-red-500/20 bg-red-500/5 px-4 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all"
+                className="h-9 whitespace-nowrap rounded-xl border-red-500/20 bg-red-500/5 px-3 text-[10px] font-semibold uppercase tracking-widest text-red-500 transition-all hover:bg-red-500/10"
               >
                 <Unplug className="mr-2 h-4 w-4" />
                 Unbind
@@ -165,20 +100,22 @@ export function PortfolioSection() {
 
         <PortfolioOverview />
 
-        <div className="grid grid-cols-1 gap-6">
-          <PnLChart />
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
+          <div className="h-full xl:col-span-3">
+            <PnLChart />
+          </div>
+          <div className="h-full xl:col-span-2">
+            <MonthlyCalendar />
+          </div>
         </div>
+
+        <OpenPositions />
 
         <PositionsTable />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {walletAddress && <FundFlowTable walletAddress={sourceWalletAddress || walletAddress} />}
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {walletAddress && <AssetFlowCard walletAddress={sourceWalletAddress || walletAddress} />}
-        </div>
-
-        <div className="space-y-6">
-          <MonthlyCalendar />
-          <OpenPositions />
+          {walletAddress && <FundFlowTable walletAddress={sourceWalletAddress || walletAddress} />}
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import React, { useMemo, useState, useEffect } from "react"
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Trophy, TrendingUp, DollarSign, Activity, BarChart3, Settings2, Target } from 'lucide-react';
+import { Trophy, TrendingUp, Activity, BarChart3, Settings2, Target, Wallet, Layers3 } from 'lucide-react';
 import { usePortfolio } from '@/context/portfolio-context';
 import { fetchPnLOverview, getVolumeFromPnLOverview, fetchDetailedBalance } from '@/lib/sodex-api';
 import { getTokenPrice } from '@/lib/token-price-service';
@@ -43,7 +43,7 @@ interface PortfolioStat {
 }
 
 export function PortfolioOverview() {
-  const { positions, userId, vaultBalance, setVaultBalance, walletAddress, sourceWalletAddress } = usePortfolio();
+  const { positions, userId, vaultBalance, setVaultBalance, walletAddress, sourceWalletAddress, fastAccountState, pnlDailyStats } = usePortfolio();
 
   const [balances, setBalances] = useState({
     total: 0,
@@ -69,6 +69,20 @@ export function PortfolioOverview() {
   });
 
   // 1. Fetch Balances
+  useEffect(() => {
+    const perps = fastAccountState?.perps;
+    if (!perps) return;
+
+    const usdc = perps.B?.find((balance) => balance.a === 'vUSDC') || perps.B?.[0];
+    const futuresBalance = parseFloat(usdc?.wb || perps.av || '0');
+
+    setBalances(prev => ({
+      ...prev,
+      total: Math.max(prev.total, futuresBalance),
+      futures: futuresBalance,
+    }));
+  }, [fastAccountState]);
+
   useEffect(() => {
     if (!userId) return;
 
@@ -108,11 +122,21 @@ export function PortfolioOverview() {
         const fVol = getVolumeFromPnLOverview(pnlData);
         
         const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-        const pnl30 = Array.isArray(positions) 
+        const dailyPnl30 = Array.isArray(pnlDailyStats) && pnlDailyStats.length > 0
+          ? [...pnlDailyStats]
+            .sort((a, b) => a.ts_ms - b.ts_ms)
+            .reduce((acc, item, index, arr) => {
+              if (item.ts_ms < thirtyDaysAgo) return acc;
+              const previous = index > 0 ? parseFloat(arr[index - 1].pnl || '0') : 0;
+              return acc + (parseFloat(item.pnl || '0') - previous);
+            }, 0)
+          : null;
+
+        const pnl30 = dailyPnl30 ?? (Array.isArray(positions) 
           ? positions
             .filter(p => (p.updated_at || 0) >= thirtyDaysAgo)
             .reduce((sum, p) => sum + (p.realizedPnlValue || 0), 0)
-          : 0;
+          : 0);
 
         const fFees = Array.isArray(positions)
           ? positions.reduce((sum, p) => sum + (parseFloat(p.cum_trading_fee || '0') || 0), 0)
@@ -134,7 +158,7 @@ export function PortfolioOverview() {
     fetchMetrics();
     const interval = setInterval(fetchMetrics, 45000);
     return () => clearInterval(interval);
-  }, [userId, positions]);
+  }, [userId, positions, pnlDailyStats]);
 
   // 3. Fetch Vault Data
   useEffect(() => {
@@ -210,33 +234,43 @@ export function PortfolioOverview() {
 
   const totalNetWorth = balances.total + balances.vault;
   const isSyncing = loading.balances || loading.futuresMetrics || loading.vault;
+  const accountPnl = useMemo(() => {
+    if (Array.isArray(pnlDailyStats) && pnlDailyStats.length > 0) {
+      const latest = [...pnlDailyStats].sort((a, b) => a.ts_ms - b.ts_ms).at(-1);
+      return parseFloat(latest?.pnl || '0');
+    }
 
-  const summaryCards = [
+    return Array.isArray(positions)
+      ? positions.reduce((sum, position) => sum + (position.realizedPnlValue || 0), 0)
+      : 0;
+  }, [pnlDailyStats, positions]);
+  const isAccountProfit = accountPnl >= 0;
+  const accountPnlPercent = totalNetWorth > 0 ? (accountPnl / totalNetWorth) * 100 : 0;
+
+  const formatCurrency = (value: number, decimals = 0) => {
+    const sign = value < 0 ? '-' : '';
+    return `${sign}$${Math.abs(value).toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })}`;
+  };
+
+  const tradingStats = [
     {
-      label: 'Total net worth',
-      value: `$${totalNetWorth.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-      helper: balances.hasUnpricedAssets ? 'Includes priced assets, some holdings omitted' : 'Spot + futures + vault',
-      icon: <DollarSign className="h-4 w-4" />,
-      tone: 'text-foreground dark:text-white',
-    },
-    {
-      label: '30D performance',
+      label: '30D PnL',
       value: `${metrics.pnl30d >= 0 ? '+' : '-'}$${Math.abs(metrics.pnl30d).toLocaleString('en-US', { maximumFractionDigits: 2 })}`,
-      helper: 'Realized profit and loss over the last 30 days',
       icon: <TrendingUp className="h-4 w-4" />,
       tone: metrics.pnl30d >= 0 ? 'text-green-400' : 'text-red-400',
     },
     {
-      label: `${rankOptions.windowType} ${rankOptions.sortBy} rank`,
-      value: isRankLoading ? 'Loading...' : `#${userRankData?.rank || '---'}`,
-      helper: 'Live leaderboard snapshot',
+      label: `${rankOptions.windowType} rank`,
+      value: isRankLoading ? '...' : `#${userRankData?.rank || '---'}`,
       icon: <Trophy className="h-4 w-4" />,
-      tone: 'text-foreground dark:text-white',
+      tone: 'text-foreground',
     },
     {
-      label: 'Vault shares',
+      label: 'Vault',
       value: `${metrics.vaultShares.toFixed(2)} MAG7`,
-      helper: `${metrics.vaultPnl >= 0 ? '+' : '-'}${Math.abs(metrics.vaultPnl).toFixed(2)} vault PnL`,
       icon: <Target className="h-4 w-4" />,
       tone: metrics.vaultPnl >= 0 ? 'text-green-400' : 'text-red-400',
     },
@@ -307,42 +341,73 @@ export function PortfolioOverview() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {summaryCards.map((item) => (
-            <div key={item.label} className="rounded-[1.5rem] border border-black/8 bg-black/[0.02] p-5 dark:border-white/10 dark:bg-white/[0.03]">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">{item.label}</span>
-                <span className="text-black/35 dark:text-white/40">{item.icon}</span>
-              </div>
-              <div className="mt-6">
-                {loading.balances && item.label === 'Total net worth' && totalNetWorth === 0 ? (
-                  <LoadingShimmer className="h-8 w-32" />
-                ) : (
-                  <p className={cn("text-2xl font-semibold tracking-[-0.04em] md:text-3xl", item.tone)}>
-                    {item.value}
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+          <div className={cn(
+            "relative overflow-hidden rounded-[1.5rem] border p-5",
+            isAccountProfit
+              ? "border-green-500/20 bg-green-500/[0.045]"
+              : "border-red-500/20 bg-red-500/[0.045]"
+          )}>
+            <div className={cn(
+              "absolute inset-y-5 left-0 w-1 rounded-r-full",
+              isAccountProfit ? "bg-green-500" : "bg-red-500"
+            )} />
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="pl-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Account PnL</p>
+                <div className="mt-3 flex flex-wrap items-baseline gap-3">
+                  <p className={cn("text-4xl font-semibold tracking-[-0.05em] md:text-5xl", isAccountProfit ? "text-green-400" : "text-red-400")}>
+                    {accountPnl >= 0 ? '+' : ''}{formatCurrency(accountPnl, 2)}
                   </p>
+                  <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]", isAccountProfit ? "bg-green-500/12 text-green-400" : "bg-red-500/12 text-red-400")}>
+                    {accountPnlPercent >= 0 ? '+' : ''}{accountPnlPercent.toFixed(2)}%
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {balances.hasUnpricedAssets ? 'Net worth includes priced assets; some holdings are omitted.' : 'Realized account result against current net worth.'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-black/8 bg-white/55 p-4 dark:border-white/10 dark:bg-black/30 md:min-w-48">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">Net worth</p>
+                {loading.balances && totalNetWorth === 0 ? (
+                  <LoadingShimmer className="mt-3 h-8 w-28" />
+                ) : (
+                  <p className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-foreground">{formatCurrency(totalNetWorth)}</p>
                 )}
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.helper}</p>
               </div>
             </div>
-          ))}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            {tradingStats.map((item) => (
+              <div key={item.label} className="rounded-[1.5rem] border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">{item.label}</p>
+                  <span className="text-black/35 dark:text-white/35">{item.icon}</span>
+                </div>
+                <p className={cn("mt-3 truncate text-xl font-semibold tracking-[-0.04em]", item.tone)}>{item.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
           {[
-            { label: 'Futures', value: balances.futures, loading: loading.balances },
-            { label: 'Spot', value: balances.spot, loading: loading.balances },
-            { label: 'Vault', value: balances.vault, loading: loading.vault },
+            { label: 'Futures balance', value: balances.futures, loading: loading.balances, icon: <Activity className="h-4 w-4" /> },
+            { label: 'Spot balance', value: balances.spot, loading: loading.balances, icon: <Wallet className="h-4 w-4" /> },
+            { label: 'Vault balance', value: balances.vault, loading: loading.vault, icon: <Layers3 className="h-4 w-4" /> },
           ].map((item) => (
-            <div key={item.label} className="rounded-[1.5rem] border border-black/8 bg-black/[0.02] p-4 dark:border-white/8 dark:bg-white/[0.02]">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-black/35 dark:text-white/35">{item.label} balance</p>
-              {item.loading && item.value === 0 ? (
-                <LoadingShimmer className="mt-3 h-7 w-24" />
-              ) : (
-                <p className="mt-3 text-xl font-medium text-foreground">
-                  ${item.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </p>
-              )}
+            <div key={item.label} className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-black/8 bg-black/[0.02] p-4 dark:border-white/8 dark:bg-white/[0.02]">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-black/35 dark:text-white/35">{item.label}</p>
+                {item.loading && item.value === 0 ? (
+                  <LoadingShimmer className="mt-3 h-6 w-20" />
+                ) : (
+                  <p className="mt-2 text-lg font-medium text-foreground">{formatCurrency(item.value)}</p>
+                )}
+              </div>
+              <span className="text-black/25 dark:text-white/25">{item.icon}</span>
             </div>
           ))}
         </div>

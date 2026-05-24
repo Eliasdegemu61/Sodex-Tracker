@@ -3,12 +3,12 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import { usePortfolio } from '@/context/portfolio-context';
 import { useMemo, useState } from 'react';
 
 export function PositionsTable() {
-  const { positions } = usePortfolio();
+  const { positions, isHistoryLoading, hasMoreHistory, fetchProgress, handleContinue } = usePortfolio();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -90,10 +90,33 @@ export function PositionsTable() {
 
   return (
     <Card className="rounded-[2rem] border border-black/8 bg-white p-3 sm:p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[10px] font-bold text-black/35 dark:text-white/35 uppercase tracking-[0.22em]">
           Position history
         </h3>
+        {(hasMoreHistory || isHistoryLoading) && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
+              Showing recent {positions.length.toLocaleString()}
+            </span>
+            <Button
+              onClick={handleContinue}
+              disabled={isHistoryLoading || !fetchProgress.nextCursor}
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-xl px-3 text-[9px] font-semibold uppercase tracking-[0.16em]"
+            >
+              {isHistoryLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  Loading full history
+                </>
+              ) : (
+                'Load 1K+ history'
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Desktop Table */}

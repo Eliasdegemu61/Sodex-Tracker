@@ -12,7 +12,7 @@ interface PnLChartProps {
 }
 
 export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
-  const { positions } = usePortfolio();
+  const { positions, pnlDailyStats } = usePortfolio();
   const { theme } = useTheme();
   const [timePeriod, setTimePeriod] = useState<'all' | '1w' | '1m' | '3m' | '1y'>('all');
 
@@ -46,6 +46,44 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
   }, [positions, timePeriod]);
 
   const chartData = useMemo(() => {
+    if (Array.isArray(pnlDailyStats) && pnlDailyStats.length > 0) {
+      const now = new Date();
+      let startDate = new Date(0);
+
+      switch (timePeriod) {
+        case '1w':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '1m':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '3m':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case '1y':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+      }
+
+      let previousCumulative = 0;
+      return [...pnlDailyStats]
+        .sort((a, b) => a.ts_ms - b.ts_ms)
+        .map((item) => {
+          const cumulative = parseFloat(item.pnl || '0');
+          const dailyPnl = cumulative - previousCumulative;
+          previousCumulative = cumulative;
+
+          return {
+            ts: item.ts_ms,
+            date: new Date(item.ts_ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }),
+            pnl: dailyPnl,
+            cumulative,
+            waterfall: [cumulative - dailyPnl, cumulative],
+          };
+        })
+        .filter((item) => timePeriod === 'all' || item.ts >= startDate.getTime());
+    }
+
     if (!getFilteredPositions || getFilteredPositions.length === 0) {
       return [];
     }
@@ -86,7 +124,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
         waterfall: [prevCumulative, cumulativePnL],
       };
     });
-  }, [getFilteredPositions]);
+  }, [getFilteredPositions, pnlDailyStats, timePeriod]);
 
   const stats = useMemo(() => {
     if (chartData.length === 0) {
@@ -115,38 +153,27 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
 
   const hasData = chartData.length > 0;
   const axisColor = theme === 'dark' ? '#ffffff45' : 'rgba(0,0,0,0.45)';
-  const axisSecondary = theme === 'dark' ? '#ffffff35' : 'rgba(0,0,0,0.35)';
   const tooltipBg = theme === 'dark' ? '#050505' : '#ffffff';
   const tooltipBorder = theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)';
   const tooltipText = theme === 'dark' ? '#fff' : '#111';
   const cursorColor = theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const lineColor = theme === 'dark' ? '#ffffff' : '#111111';
 
-  // New: Calculate synchronized domains to align the zero line
+  // Daily bars and cumulative line intentionally share one scale.
   const domains = useMemo(() => {
-    if (!hasData) return { daily: [0, 0], cumulative: [0, 0] };
+    if (!hasData) return { pnl: [0, 0] };
 
-    const dailyValues = chartData.map(d => d.pnl);
-    const cumValues = chartData.map(d => d.cumulative);
+    const values = chartData.flatMap(d => [d.pnl, d.cumulative]);
+    const min = Math.min(...values, 0);
+    const max = Math.max(...values, 0);
+    const abs = Math.max(Math.abs(min), Math.abs(max)) * 1.15 || 1;
 
-    const dMin = Math.min(...dailyValues, 0);
-    const dMax = Math.max(...dailyValues, 0);
-    const cMin = Math.min(...cumValues, 0);
-    const cMax = Math.max(...cumValues, 0);
-
-    // Make domains symmetric around 0 to guarantee alignment in the center
-    const dAbs = Math.max(Math.abs(dMin), Math.abs(dMax)) * 1.1;
-    const cAbs = Math.max(Math.abs(cMin), Math.abs(cMax)) * 1.25; // More headroom for the line
-
-    return {
-      daily: [-dAbs, dAbs],
-      cumulative: [-cAbs, cAbs]
-    };
+    return { pnl: [-abs, abs] };
   }, [chartData, hasData]);
 
   return (
-    <Card className="rounded-[2rem] border border-black/8 bg-white p-3 sm:p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="mb-6">
+    <Card className="flex h-full flex-col rounded-[2rem] border border-black/8 bg-white p-3 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-5">
+      <div className="mb-6 shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">
             {title}
@@ -174,7 +201,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
         </div>
       </div>
 
-      <div className="h-[250px] w-full flex items-center justify-center relative">
+      <div className="relative flex min-h-[360px] flex-1 items-center justify-center">
         {!hasData ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-black/10 bg-black/[0.02] transition-colors dark:border-white/10 dark:bg-white/[0.02]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/30 dark:text-white/30">No data available</p>
@@ -190,25 +217,14 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
                 tickLine={false}
               />
               <YAxis
-                yAxisId="cumulative-axis"
-                domain={domains.cumulative}
+                yAxisId="pnl-axis"
+                domain={domains.pnl}
                 stroke={cursorColor}
                 tick={{ fill: axisColor, fontSize: 9, fontWeight: 700 }}
                 tickFormatter={(value) => value.toLocaleString('en-US', { maximumFractionDigits: 2 })}
                 axisLine={false}
                 tickLine={false}
                 orientation="left"
-                hide={false}
-              />
-              <YAxis
-                yAxisId="daily-axis"
-                domain={domains.daily}
-                stroke={cursorColor}
-                tick={{ fill: axisSecondary, fontSize: 9, fontWeight: 700 }}
-                tickFormatter={(value) => value.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-                axisLine={false}
-                tickLine={false}
-                orientation="right"
                 hide={false}
               />
               <Tooltip
@@ -236,10 +252,9 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
                   return [displayValue, 'Daily PnL'];
                 }}
               />
-              {/* Unified zero line using the cumulative axis (scales are aligned now) */}
-              <ReferenceLine yAxisId="cumulative-axis" y={0} stroke={cursorColor} strokeWidth={1} strokeDasharray="4 4" />
+              <ReferenceLine yAxisId="pnl-axis" y={0} stroke={cursorColor} strokeWidth={1} strokeDasharray="4 4" />
               <Bar
-                yAxisId="daily-axis"
+                yAxisId="pnl-axis"
                 dataKey="pnl"
                 radius={[4, 4, 0, 0]}
                 barSize={8}
@@ -249,7 +264,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
                 ))}
               </Bar>
               <Line
-                yAxisId="cumulative-axis"
+                yAxisId="pnl-axis"
                 type="monotone"
                 dataKey="cumulative"
                 stroke={lineColor}

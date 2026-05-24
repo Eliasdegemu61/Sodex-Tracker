@@ -4,7 +4,7 @@
 import React from "react"
 
 import { Suspense, useState, lazy, useEffect } from 'react'
-import { Moon, Sun, Activity, TrendingUp, Wallet, Trophy, Zap, Compass, BookOpen, LineChart } from 'lucide-react'
+import { Moon, Sun, Activity, TrendingUp, Wallet, Trophy, Zap, Compass, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -30,7 +30,6 @@ import { Loader2 } from 'lucide-react'
 import { OverallDepositsCard, AssetsSkeleton } from '@/components/overall-token-flow'
 
 import { TrackerSection } from '@/components/tracker-section'
-import { TradeAnalytics } from '@/components/trade-analytics'
 import { DemoTrading } from '@/components/demo-trading'
 import { Footer } from '@/components/footer'
 import { SopointsAnalyzer } from '@/components/sopoints-analyzer'
@@ -286,7 +285,7 @@ function DistributionAnalyzerPage({ onBack }: { onBack: () => void }) {
 
 export default function Dashboard() {
   const { theme, toggleTheme, mounted } = useTheme()
-  const [currentPage, setCurrentPage] = useState<'dex-status' | 'tracker' | 'portfolio' | 'leaderboard' | 'analyzer' | 'about' | 'whale-tracker' | 'assets' | 'journal' | 'analytics' | 'demo-trading' | 'pulse' | 'funding' | 'export-history'>('dex-status')
+  const [currentPage, setCurrentPage] = useState<'dex-status' | 'tracker' | 'portfolio' | 'leaderboard' | 'analyzer' | 'about' | 'whale-tracker' | 'assets' | 'journal' | 'demo-trading' | 'pulse' | 'funding' | 'export-history'>('dex-status')
   const [searchAddressInput, setSearchAddressInput] = useState('')
   const [trackerSearchAddress, setTrackerSearchAddress] = useState('')
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -299,7 +298,6 @@ export default function Dashboard() {
     { id: 'portfolio', label: 'Portfolio', icon: Wallet },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'analyzer', label: 'Reverse Search', icon: Search },
-    { id: 'analytics', label: 'Trade analytics', icon: LineChart },
     { id: 'assets', label: 'Assets', icon: Compass },
   ] as const;
 
@@ -334,7 +332,7 @@ export default function Dashboard() {
       setTrackerSearchAddress(decodeURIComponent(addressParam));
     }
 
-    if (tabParam && ['dex-status', 'tracker', 'portfolio', 'leaderboard', 'analyzer', 'about', 'whale-tracker', 'assets', 'analytics', 'demo-trading', 'pulse', 'funding', 'export-history'].includes(tabParam)) {
+    if (tabParam && ['dex-status', 'tracker', 'portfolio', 'leaderboard', 'analyzer', 'about', 'whale-tracker', 'assets', 'demo-trading', 'pulse', 'funding', 'export-history'].includes(tabParam)) {
 
       setCurrentPage(tabParam);
     } else {
@@ -365,7 +363,7 @@ export default function Dashboard() {
     <SidebarProvider>
       <div className={cn(
         "flex min-h-screen w-full font-sans transition-colors duration-500",
-        theme === 'light' ? "bg-[#F5F5F7]" : "bg-black"
+        theme === 'light' ? "bg-[#F5F5F7]" : "bg-background"
       )}>
         {/* Sidebar Navigation */}
         <SidebarNav currentPage={currentPage} onNavigate={setCurrentPage} />
@@ -373,7 +371,7 @@ export default function Dashboard() {
         {/* Main Content Area */}
         <SidebarInset className={cn(
           "flex-1 flex flex-col min-h-screen overflow-hidden relative transition-colors duration-500",
-          theme === 'light' ? "bg-[#F5F5F7]" : "bg-black"
+          theme === 'light' ? "bg-[#F5F5F7]" : "bg-background"
         )}>
           
           {/* Top Header / Search Bar */}
@@ -381,7 +379,7 @@ export default function Dashboard() {
             "sticky top-0 z-40 w-full transition-all duration-300 border-b",
             theme === 'light' 
               ? (isScrolled ? "bg-white/80 backdrop-blur-xl border-black/5" : "bg-white border-black/5") 
-              : (isScrolled ? "bg-black/80 backdrop-blur-xl border-white/5" : "bg-black border-white/5"),
+              : (isScrolled ? "bg-background/80 backdrop-blur-xl border-border" : "bg-background border-border"),
             isScrolled ? "py-3" : "py-4"
           )}>
             <div className="container px-6 flex items-center justify-between gap-4 max-w-full">
@@ -513,12 +511,6 @@ export default function Dashboard() {
                   <PortfolioProvider>
                     <JournalPageClient isDashboard />
                   </PortfolioProvider>
-                </Suspense>
-              )}
-
-              {currentPage === 'analytics' && (
-                <Suspense fallback={<LoadingCard />}>
-                  <TradeAnalytics />
                 </Suspense>
               )}
 

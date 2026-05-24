@@ -1,5 +1,4 @@
 'use client';
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
@@ -146,8 +145,9 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
   };
 
   const [showMore, setShowMore] = useState(false);
-  const hasMore = assets.length > 4;
-  const displayedAssets = showMore ? assets : assets.slice(0, 4);
+  const previewCount = 8;
+  const hasMore = assets.length > previewCount;
+  const displayedAssets = showMore ? assets : assets.slice(0, previewCount);
 
   if (isLoading) {
     return (
@@ -177,84 +177,80 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
   }
 
   return (
-    <Card className="rounded-[2rem] border border-black/8 bg-white p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
-              <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
-                ${totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-              </p>
-            </div>
-            <p className="text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
-              Holdings breakdown
-            </p>
-          </div>
-
-          <div className={cn(
-            "grid grid-cols-1 gap-2 transition-all duration-300",
-            showMore && assets.length > 4 ? "max-h-[300px] overflow-y-auto pr-2 custom-scrollbar" : ""
-          )}>
-            {displayedAssets.map((asset, idx) => {
-              const tokenLogo = getTokenLogo(asset.coin);
-              return (
-                <div
-                  key={idx}
-                  className="group relative flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] p-3 transition-all hover:bg-black/[0.06] dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
-                >
-                  <div
-                    className="absolute inset-y-2 left-0 w-1 rounded-r-full opacity-70 transition-opacity group-hover:opacity-100"
-                    style={{ backgroundColor: asset.color }}
-                  />
-
-                  <div className="flex items-center gap-3 flex-1 min-w-0 pl-3">
-                    <div className="relative">
-                      {tokenLogo ? (
-                        <img
-                          src={tokenLogo}
-                          alt={asset.coin}
-                          className="h-6 w-6 flex-shrink-0 rounded-full bg-black/[0.06] p-0.5 dark:bg-white/[0.06]"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black/[0.06] text-[8px] font-semibold text-black/45 dark:bg-white/[0.06] dark:text-white/45">
-                          {asset.coin[0]}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold tracking-tight text-foreground">
-                        {getDisplayName(asset.coin)}
-                      </span>
-                      {asset.isFuture && (
-                        <span className="mt-0.5 text-[7px] font-semibold uppercase tracking-[0.14em] leading-none text-black/30 dark:text-white/30">futures</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-[11px] font-semibold text-black/55 dark:text-white/55">
-                      {formatTokenBalance(asset.balance, asset.coin)}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {hasMore && (
-            <button
-              onClick={() => setShowMore(!showMore)}
-              className="w-full py-2 text-[10px] font-black uppercase tracking-[0.2em] text-black/30 hover:text-black transition-colors dark:text-white/30 dark:hover:text-white"
-            >
-              {showMore ? 'Show Less' : `+${assets.length - 4} More Assets`}
-            </button>
-          )}
+    <Card className="flex h-full min-h-[520px] flex-col rounded-[2rem] border border-black/8 bg-white p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+      <div className="flex shrink-0 items-end justify-between gap-3">
+        <div>
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
+          <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
+            ${totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </p>
         </div>
+        <p className="text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
+          {assets.length} holdings
+        </p>
       </div>
+
+      <div className={cn(
+        "mt-5 grid min-h-0 flex-1 grid-cols-1 content-start gap-2 transition-all duration-300",
+        showMore ? "overflow-y-auto pr-2 custom-scrollbar" : "overflow-hidden"
+      )}>
+        {displayedAssets.map((asset, idx) => {
+          const tokenLogo = getTokenLogo(asset.coin);
+          return (
+            <div
+              key={idx}
+              className="group relative flex min-h-[46px] items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] p-3 transition-all hover:bg-black/[0.06] dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
+            >
+              <div
+                className="absolute inset-y-2 left-0 w-1 rounded-r-full opacity-70 transition-opacity group-hover:opacity-100"
+                style={{ backgroundColor: asset.color }}
+              />
+
+              <div className="flex min-w-0 flex-1 items-center gap-3 pl-3">
+                <div className="relative shrink-0">
+                  {tokenLogo ? (
+                    <img
+                      src={tokenLogo}
+                      alt={asset.coin}
+                      className="h-6 w-6 rounded-full bg-black/[0.06] p-0.5 dark:bg-white/[0.06]"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black/[0.06] text-[8px] font-semibold text-black/45 dark:bg-white/[0.06] dark:text-white/45">
+                      {asset.coin[0]}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <span className="block truncate text-[11px] font-semibold tracking-tight text-foreground">
+                    {getDisplayName(asset.coin)}
+                  </span>
+                  {asset.isFuture && (
+                    <span className="mt-0.5 block text-[7px] font-semibold uppercase leading-none tracking-[0.14em] text-black/30 dark:text-white/30">futures</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="text-[11px] font-semibold text-black/60 dark:text-white/60">
+                  {formatTokenBalance(asset.balance, asset.coin)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {hasMore && (
+        <button
+          onClick={() => setShowMore(!showMore)}
+          className="mt-4 shrink-0 rounded-2xl border border-black/8 bg-black/[0.025] py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black/35 transition-colors hover:text-black dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35 dark:hover:text-white"
+        >
+          {showMore ? 'Show Less' : `+${assets.length - previewCount} More Assets`}
+        </button>
+      )}
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;

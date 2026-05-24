@@ -14,7 +14,6 @@ import { ChevronRight,
   Compass,
   Shield,
   BookOpen,
-  LineChart,
   CandlestickChart,
   MessageSquare,
   Coins,
@@ -77,7 +76,6 @@ export function MobileNavMenu({ currentPage, onNavigate }: MobileNavMenuProps) {
     { section: 'Beta', items: [
       { id: 'journal', label: 'Journal', icon: BookOpen },
       { id: 'demo-trading', label: 'Demo Trading', icon: CandlestickChart },
-      { id: 'analytics', label: 'Trade analytics', icon: LineChart },
     ]}
   ];
 
@@ -121,7 +119,6 @@ export function MobileNavMenu({ currentPage, onNavigate }: MobileNavMenuProps) {
                    item.label === 'Accrued Funding' ? 'Funding' : 
                    item.label === 'Reverse Search' ? 'Search' :
                    item.label === 'SoDex Status' ? 'Status' :
-                   item.label === 'Trade analytics' ? 'Analytics' :
                    item.label}
                 </span>
               </button>

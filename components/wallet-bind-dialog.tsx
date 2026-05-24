@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePortfolio } from '@/context/portfolio-context';
-import { getUserIdByAddress, fetchAllPositions, enrichPositions } from '@/lib/sodex-api';
 import { cacheManager } from '@/lib/cache';
 import { Loader2, X } from 'lucide-react';
 
@@ -17,7 +16,7 @@ export function WalletBindDialog({ open, onOpenChange }: WalletBindDialogProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const { setWalletAddress } = usePortfolio();
+  const { bindWalletFast } = usePortfolio();
 
   const handleBind = async () => {
     if (!address.trim()) {
@@ -29,14 +28,8 @@ export function WalletBindDialog({ open, onOpenChange }: WalletBindDialogProps) 
     setStatus(null);
     try {
       cacheManager.clear();
-      setStatus('Looking up your account...');
-      const userId = await getUserIdByAddress(address.trim());
-      setStatus('Fetching your positions...');
-      const positions = await fetchAllPositions(userId);
-      setStatus('Processing your data...');
-      const enrichedPositions = await enrichPositions(positions);
-      setStatus('Saving your account...');
-      await setWalletAddress(address.trim(), userId, enrichedPositions);
+      setStatus('Loading recent position history...');
+      await bindWalletFast(address.trim(), false);
       setStatus('Account bound successfully!');
       setTimeout(() => { onOpenChange(false); setAddress(''); setStatus(null); }, 1000);
     } catch (err) {
