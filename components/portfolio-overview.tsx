@@ -371,19 +371,19 @@ export function PortfolioOverview() {
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                 {[
                   ...tradingStats,
-                  { label: 'Futures', value: formatCurrency(balances.futures), icon: <Activity className="h-3.5 w-3.5" />, tone: 'text-foreground' },
-                  { label: 'Spot', value: formatCurrency(balances.spot), icon: <Wallet className="h-3.5 w-3.5" />, tone: 'text-foreground' },
-                  { label: 'Vault bal.', value: formatCurrency(balances.vault), icon: <Layers3 className="h-3.5 w-3.5" />, tone: 'text-foreground' },
+                  { label: 'Futures', value: formatCurrency(balances.futures), icon: <Activity className="h-3 w-3" />, tone: 'text-foreground' },
+                  { label: 'Spot', value: formatCurrency(balances.spot), icon: <Wallet className="h-3 w-3" />, tone: 'text-foreground' },
+                  { label: 'Vault', value: formatCurrency(balances.vault), icon: <Layers3 className="h-3 w-3" />, tone: 'text-foreground' },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-lg border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35">{item.label}</p>
+                  <div key={item.label} className="rounded-[8px] border border-black/8 bg-black/[0.025] p-1.5 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="truncate text-[6px] font-semibold uppercase tracking-[0.12em] text-black/35 dark:text-white/35">{item.label}</p>
                       <span className="text-black/30 dark:text-white/35">{item.icon}</span>
                     </div>
-                    <p className={cn("mt-1 truncate text-sm font-semibold tracking-[-0.03em]", item.tone)}>{item.value}</p>
+                    <p className={cn("mt-0.5 truncate text-[10px] font-semibold tracking-[-0.02em]", item.tone)}>{item.value}</p>
                   </div>
                 ))}
               </div>

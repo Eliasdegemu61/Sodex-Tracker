@@ -177,21 +177,21 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
   }
 
   return (
-    <Card className="flex h-full flex-col rounded-xl border border-black/8 bg-white p-4 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-5 lg:min-h-[520px]">
-      <div className="flex shrink-0 items-end justify-between gap-3">
+    <Card className="flex h-full flex-col rounded-[14px] border border-black/8 bg-white p-2.5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-5 lg:min-h-[520px]">
+      <div className="flex shrink-0 items-end justify-between gap-2 md:gap-3 px-1 md:px-0">
         <div>
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
-          <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground">
+          <h3 className="text-[8px] md:text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
+          <p className="mt-0.5 md:mt-2 text-lg md:text-2xl font-semibold tracking-[-0.04em] text-foreground leading-none md:leading-normal">
             ${totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <p className="text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
+        <p className="text-right text-[8px] md:text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30 mb-0.5 md:mb-1">
           {assets.length} holdings
         </p>
       </div>
 
       <div className={cn(
-        "mt-5 grid min-h-0 flex-1 grid-cols-1 content-start gap-2 transition-all duration-300",
+        "mt-3 md:mt-5 grid min-h-0 flex-1 grid-cols-1 content-start gap-1 md:gap-2 transition-all duration-300",
         showMore ? "overflow-y-auto pr-2 custom-scrollbar" : "overflow-hidden"
       )}>
         {displayedAssets.map((asset, idx) => {
@@ -199,42 +199,42 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
           return (
             <div
               key={idx}
-              className="group relative flex min-h-[46px] items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] p-3 transition-all hover:bg-black/[0.06] dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
+              className="group relative flex min-h-[32px] md:min-h-[46px] items-center justify-between rounded-[10px] md:rounded-2xl border border-black/8 bg-black/[0.02] py-1.5 px-2 md:p-3 transition-all hover:bg-black/[0.04] dark:border-white/8 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
             >
               <div
-                className="absolute inset-y-2 left-0 w-1 rounded-r-full opacity-70 transition-opacity group-hover:opacity-100"
+                className="absolute inset-y-1.5 md:inset-y-2 left-0 w-[3px] md:w-1 rounded-r-full opacity-70 transition-opacity group-hover:opacity-100"
                 style={{ backgroundColor: asset.color }}
               />
 
-              <div className="flex min-w-0 flex-1 items-center gap-3 pl-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3 pl-1.5 md:pl-3">
                 <div className="relative shrink-0">
                   {tokenLogo ? (
                     <img
                       src={tokenLogo}
                       alt={asset.coin}
-                      className="h-6 w-6 rounded-full bg-black/[0.06] p-0.5 dark:bg-white/[0.06]"
+                      className="h-4 w-4 md:h-6 md:w-6 rounded-full bg-black/[0.06] p-0.5 dark:bg-white/[0.06]"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
                       }}
                     />
                   ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black/[0.06] text-[8px] font-semibold text-black/45 dark:bg-white/[0.06] dark:text-white/45">
+                    <div className="flex h-4 w-4 md:h-6 md:w-6 items-center justify-center rounded-full bg-black/[0.06] text-[6px] md:text-[8px] font-semibold text-black/45 dark:bg-white/[0.06] dark:text-white/45">
                       {asset.coin[0]}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <span className="block truncate text-[11px] font-semibold tracking-tight text-foreground">
+                  <span className="block truncate text-[9px] md:text-[11px] font-semibold tracking-tight text-foreground leading-tight">
                     {getDisplayName(asset.coin)}
                   </span>
                   {asset.isFuture && (
-                    <span className="mt-0.5 block text-[7px] font-semibold uppercase leading-none tracking-[0.14em] text-black/30 dark:text-white/30">futures</span>
+                    <span className="mt-0.5 block text-[6px] md:text-[7px] font-semibold uppercase leading-none tracking-[0.14em] text-black/30 dark:text-white/30">futures</span>
                   )}
                 </div>
               </div>
 
               <div className="shrink-0 text-right">
-                <p className="text-[11px] font-semibold text-black/60 dark:text-white/60">
+                <p className="text-[9px] md:text-[11px] font-semibold text-black/60 dark:text-white/60">
                   {formatTokenBalance(asset.balance, asset.coin)}
                 </p>
               </div>
@@ -246,7 +246,7 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
       {hasMore && (
         <button
           onClick={() => setShowMore(!showMore)}
-          className="mt-4 shrink-0 rounded-2xl border border-black/8 bg-black/[0.025] py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black/35 transition-colors hover:text-black dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35 dark:hover:text-white"
+          className="mt-2 md:mt-4 shrink-0 rounded-[10px] md:rounded-2xl border border-black/8 bg-black/[0.02] py-1.5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-black/35 transition-colors hover:text-black dark:border-white/10 dark:bg-white/[0.02] dark:text-white/35 dark:hover:text-white"
         >
           {showMore ? 'Show Less' : `+${assets.length - previewCount} More Assets`}
         </button>

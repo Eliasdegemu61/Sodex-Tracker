@@ -7,7 +7,6 @@ import { usePortfolio } from '@/context/portfolio-context';
 import { useMemo, useState, useEffect } from 'react';
 import { fetchAccountDetails, fastPerpsStateToAccountDetails, type OpenPositionData, type BalanceData, type OpenOrderData } from '@/lib/sodex-api';
 import { cacheManager } from '@/lib/cache';
-import { getTokenLogo } from '@/lib/token-logos';
 
 export function OpenPositions({ accountId }: { accountId?: string | null }) {
   const portfolio = usePortfolio();
@@ -227,7 +226,7 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
               </span>
               {isRefreshing && <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-500" />}
             </div>
-            <p className="mt-2 text-sm leading-5 text-muted-foreground/60">
+            <p className="mt-1 text-xs leading-4 text-muted-foreground/60">
               Live perps exposure, margin, liquidation risk, and unrealized PnL.
             </p>
           </div>
@@ -239,7 +238,7 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
           )}
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
+        <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
           {[
             { label: 'Unrealized', value: `${openStats.totalUnrealized >= 0 ? '+' : ''}${formatCurrency(openStats.totalUnrealized)}`, tone: openStats.totalUnrealized >= 0 ? 'text-green-500' : 'text-red-500' },
             { label: 'Notional', value: formatCurrency(openStats.notional, 0), tone: 'text-foreground' },
@@ -248,76 +247,135 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
             { label: 'Long / Short', value: `${openStats.longCount} / ${openStats.shortCount}`, tone: 'text-foreground' },
             { label: 'Available', value: balanceData ? formatCurrency(parseFloat(balanceData.availableBalance)) : '--', tone: 'text-green-500' },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-black/8 bg-black/[0.025] p-3 dark:border-white/10 dark:bg-white/[0.03]">
+            <div key={stat.label} className="rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03]">
               <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:text-white/35">{stat.label}</p>
-              <p className={`mt-1 truncate text-sm font-semibold tracking-[-0.03em] sm:text-base ${stat.tone}`}>{stat.value}</p>
+              <p className={`mt-0.5 truncate text-xs font-semibold tracking-[-0.02em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1040px] border-collapse text-left">
-          <thead>
-            <tr className="border-b border-black/8 bg-black/[0.025] text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35">
-              <th className="px-4 py-3">Market</th>
-              <th className="px-4 py-3">Side</th>
-              <th className="px-4 py-3 text-right">Size</th>
-              <th className="px-4 py-3 text-right">Entry</th>
-              <th className="px-4 py-3 text-right">Mark risk</th>
-              <th className="px-4 py-3 text-right">Margin</th>
-              <th className="px-4 py-3 text-right">Lev.</th>
-              <th className="px-4 py-3 text-right">Unrealized</th>
-              <th className="px-4 py-3 text-right">TP / SL</th>
-              <th className="px-4 py-3 text-right">Fees</th>
-            </tr>
-          </thead>
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+        `}} />
+        <div className="no-scrollbar overflow-x-auto">
+          <table className="w-full text-[10px] border-separate border-spacing-y-1.5 text-left">
+            <thead>
+              <tr className="text-black/35 dark:text-white/35 font-bold uppercase tracking-[0.18em] text-[9px]">
+                <th className="text-left py-2 px-3">Market</th>
+                <th className="text-left py-2 px-3">Side</th>
+                <th className="text-left py-2 px-3">Mode</th>
+                <th className="text-right py-2 px-3">Size</th>
+                <th className="text-right py-2 px-3">Entry</th>
+                <th className="text-right py-2 px-3">Mark risk</th>
+                <th className="text-right py-2 px-3">Margin</th>
+                <th className="text-right py-2 px-3">Lev.</th>
+                <th className="text-right py-2 px-3">Unrealized</th>
+                <th className="text-right py-2 px-3">TP / SL</th>
+                <th className="text-right py-2 px-3">Fees</th>
+              </tr>
+            </thead>
           <tbody>
             {paginatedPositions.map((pos) => {
               const isProfit = pos.unrealized >= 0;
-              const logo = getTokenLogo(pos.symbol);
 
               return (
-                <tr key={pos.id} className="border-b border-black/6 transition-colors hover:bg-black/[0.025] dark:border-white/8 dark:hover:bg-white/[0.035]">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/8 bg-black/[0.03] dark:border-white/10 dark:bg-white/[0.04]">
-                        {logo ? (
-                          <img src={logo} alt={pos.symbol} className="h-5 w-5 object-contain" />
-                        ) : (
-                          <span className="text-xs font-semibold text-muted-foreground">{pos.symbol.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-foreground">{pos.symbol}</p>
-                        <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-muted-foreground/45">#{pos.positionId} · {pos.margin_type}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${pos.side === 'LONG' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                <tr key={pos.id} className="group relative rounded-xl bg-black/[0.02] transition-all hover:bg-black/[0.04] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]">
+                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl font-semibold text-foreground">{pos.symbol}</td>
+                  <td className="py-3 px-3">
+                    <span className={`rounded-md px-2 py-0.5 text-[9px] font-semibold tracking-[0.18em] ${pos.side === 'LONG' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
                       {pos.side}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{formatPrice(pos.entry)}</td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-red-500/80">{formatPrice(pos.liquidation)}</td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{formatCurrency(pos.margin)}</td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-foreground">{pos.leverage}x</td>
-                  <td className={`px-4 py-4 text-right text-sm font-semibold tabular-nums ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                  <td className="py-3 px-3">
+                    <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
+                      {pos.margin_type}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{formatPrice(pos.entry)}</td>
+                  <td className="py-3 px-3 text-right text-red-400">{formatPrice(pos.liquidation)}</td>
+                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{formatCurrency(pos.margin)}</td>
+                  <td className="py-3 px-3 text-right font-semibold text-foreground">{pos.leverage}x</td>
+                  <td className={`py-3 px-3 text-right font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
                     {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
                   </td>
-                  <td className="px-4 py-4 text-right text-[10px] font-semibold tabular-nums text-muted-foreground">
-                    <span className="text-green-500/80">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
-                    <span className="mx-1 text-muted-foreground/25">/</span>
-                    <span className="text-red-500/80">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
+                  <td className="py-3 px-3 text-right">
+                    <span className="text-green-500/80 text-[10px]">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
+                    <span className="mx-1 text-muted-foreground/25 text-[10px]">/</span>
+                    <span className="text-red-500/80 text-[10px]">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
                   </td>
-                  <td className="px-4 py-4 text-right text-xs font-semibold tabular-nums text-muted-foreground">{formatCurrency(pos.fee)}</td>
+                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl text-right text-black/55 dark:text-white/55">{formatCurrency(pos.fee)}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+        </div>
+      </div>
+
+      {/* Mobile List */}
+      <div className="md:hidden space-y-3">
+        {paginatedPositions.map((pos) => {
+          const isProfit = pos.unrealized >= 0;
+          return (
+          <div key={pos.id} className="rounded-2xl border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">{pos.symbol}</span>
+                <span className={`rounded px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] ${pos.side === 'LONG' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
+                  {pos.side}
+                </span>
+                <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
+                  {pos.margin_type}
+                </span>
+              </div>
+              <span className={`font-semibold text-[13px] ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-y-3 gap-x-2 text-[10px]">
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Entry</span>
+                <span className="text-black/55 dark:text-white/55">{formatPrice(pos.entry)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Mark risk</span>
+                <span className="text-red-400">{formatPrice(pos.liquidation)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Size</span>
+                <span className="text-black/55 dark:text-white/55">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
+              </div>
+              
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Margin / Lev.</span>
+                <span className="text-black/55 dark:text-white/55">{formatCurrency(pos.margin)} / {pos.leverage}x</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">TP / SL</span>
+                <span className="text-black/55 dark:text-white/55">
+                  <span className="text-green-500/80">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
+                  <span className="mx-1 text-muted-foreground/25">/</span>
+                  <span className="text-red-500/80">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Fees</span>
+                <span className="text-black/55 dark:text-white/55">{formatCurrency(pos.fee)}</span>
+              </div>
+            </div>
+            
+            <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-2 text-[9px] text-black/35 dark:border-white/5 dark:text-white/35">
+              <span>Opened</span>
+              <span>{pos.createdAt}</span>
+            </div>
+          </div>
+          );
+        })}
       </div>
 
       {totalPages > 1 && (

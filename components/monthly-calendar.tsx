@@ -121,10 +121,22 @@ export function MonthlyCalendar() {
 
   const formatPnL = (value: number, decimals = 0) => {
     const sign = value >= 0 ? '+' : '-';
-    return `${sign}$${Math.abs(value).toLocaleString(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    })}`;
+    const absVal = Math.abs(value);
+    
+    let formattedStr = '';
+    if (absVal >= 1_000_000) {
+      formattedStr = (absVal / 1_000_000).toFixed(1) + 'M';
+    } else if (absVal >= 1_000) {
+      formattedStr = (absVal / 1_000).toFixed(1) + 'K';
+    } else {
+      formattedStr = absVal.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    }
+    
+    formattedStr = formattedStr.replace(/\.0([KM])$/, '$1');
+    return `${sign}$${formattedStr}`;
   };
 
   const getDayStyle = (pnl: number) => {
@@ -140,52 +152,55 @@ export function MonthlyCalendar() {
 
   return (
     <Card className="overflow-hidden rounded-xl border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem]">
-      <div className="border-b border-black/8 p-3 dark:border-white/10 sm:p-5 lg:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/35 dark:text-white/35 sm:text-[10px]">Daily PnL</p>
-            <h3 className="mt-1 select-none text-xl font-semibold tracking-[-0.04em] text-foreground sm:text-2xl lg:text-3xl">
-              {currentDate.toLocaleDateString('en-US', { month: 'long' })} {currentDate.getFullYear()}
-            </h3>
-          </div>
-
-          <div className="flex w-fit shrink-0 items-center gap-1 rounded-xl border border-black/10 bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:gap-2">
-            <button
-              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
-              className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
-            <div className="mx-1 h-4 w-px bg-black/10 dark:bg-white/10" />
-            <button
-              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
-              className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2 lg:grid-cols-5">
-          {[
-            { label: 'Net', value: formatPnL(monthStats.totalPnL), tone: monthStats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500' },
-            { label: 'Win rate', value: `${monthStats.winRate.toFixed(0)}%`, tone: 'text-foreground' },
-            { label: 'Active', value: `${monthStats.activeDays} days`, tone: 'text-foreground' },
-            { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-green-500', desktopOnly: true },
-            { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-red-500', desktopOnly: true },
-          ].map((stat) => (
-            <div key={stat.label} className={`rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:p-3 ${stat.desktopOnly ? 'hidden lg:block' : ''}`}>
-              <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35 sm:text-[8px] sm:tracking-[0.16em]">{stat.label}</p>
-              <p className={`mt-1 truncate text-xs font-semibold tracking-[-0.03em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
+      <div className="flex flex-col lg:flex-row">
+        {/* Left Side: Header & Stats */}
+        <div className="flex flex-col border-b border-black/8 p-3 dark:border-white/10 sm:p-5 lg:w-1/3 lg:border-b-0 lg:border-r lg:p-6 xl:w-1/4">
+          <div className="flex items-start justify-between gap-3 lg:flex-col lg:justify-start">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/35 dark:text-white/35 sm:text-[10px]">Daily PnL</p>
+              <h3 className="mt-1 select-none text-xl font-semibold tracking-[-0.04em] text-foreground sm:text-2xl lg:text-3xl">
+                {currentDate.toLocaleDateString('en-US', { month: 'long' })} {currentDate.getFullYear()}
+              </h3>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="p-3 sm:p-5 lg:p-6">
-        <div>
+            <div className="flex w-fit shrink-0 items-center gap-1 rounded-xl border border-black/10 bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:gap-2">
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
+                className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
+                aria-label="Previous month"
+              >
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
+              <div className="mx-1 h-4 w-px bg-black/10 dark:bg-white/10" />
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
+                className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
+                aria-label="Next month"
+              >
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2 lg:mt-6 lg:grid-cols-2 lg:content-start">
+            {[
+              { label: 'Net', value: formatPnL(monthStats.totalPnL), tone: monthStats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500' },
+              { label: 'Win rate', value: `${monthStats.winRate.toFixed(0)}%`, tone: 'text-foreground' },
+              { label: 'Active', value: `${monthStats.activeDays} days`, tone: 'text-foreground' },
+              { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-green-500', desktopOnly: false },
+              { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-red-500', desktopOnly: false },
+            ].map((stat) => (
+              <div key={stat.label} className={`rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:p-3`}>
+                <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35 sm:text-[8px] sm:tracking-[0.16em]">{stat.label}</p>
+                <p className={`mt-1 truncate text-xs font-semibold tracking-[-0.03em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Side: Calendar Grid */}
+        <div className="p-3 sm:p-5 lg:w-2/3 lg:p-6 xl:w-3/4">
+          <div>
           <div>
             <div className="mb-1.5 grid grid-cols-7 gap-1 sm:mb-2 sm:gap-2">
               {weekDays.map((d) => (
@@ -243,6 +258,7 @@ export function MonthlyCalendar() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </Card>
   );

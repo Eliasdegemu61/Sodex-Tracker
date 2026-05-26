@@ -201,7 +201,7 @@ export function PnLChart({ title = 'Profit & Loss' }: PnLChartProps) {
         </div>
       </div>
 
-      <div className="relative flex min-h-[260px] flex-1 items-center justify-center md:min-h-[360px]">
+      <div className="relative flex min-h-0 flex-1 w-full items-center justify-center">
         {!hasData ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-black/10 bg-black/[0.02] transition-colors dark:border-white/10 dark:bg-white/[0.02]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/30 dark:text-white/30">No data available</p>

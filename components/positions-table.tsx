@@ -176,75 +176,59 @@ export function PositionsTable() {
         </div>
       </div>
 
-      {/* Mobile Expandable List */}
+      {/* Mobile List */}
       <div className="md:hidden space-y-3">
         {paginatedPositions.map((position) => (
-          <div key={position.id} className="overflow-hidden rounded-2xl border border-black/8 bg-black/[0.02] transition-all hover:bg-black/[0.04] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]">
-            {/* Expandable Row Summary */}
-            <button
-              onClick={() => toggleExpand(position.id)}
-              className="w-full p-4 text-left transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-foreground">{position.pair}</span>
-                    <span className={`rounded px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] ${position.type === 'long' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
-                    {position.type.toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-[10px]">
-                  <div className="flex flex-col">
-                    <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Entry</span>
-                    <span className="text-black/55 dark:text-white/55">${position.entry.toFixed(2)}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Realized</span>
-                    <span className={position.pnl >= 0 ? 'font-semibold text-green-400' : 'font-semibold text-red-400'}>
-                      {position.pnl >= 0 ? '+' : ''}${Math.abs(position.pnl).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+          <div key={position.id} className="rounded-2xl border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">{position.pair}</span>
+                <span className={`rounded px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] ${position.type === 'long' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
+                  {position.type.toUpperCase()}
+                </span>
+                <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
+                  {position.marginMode}
+                </span>
               </div>
-              <ChevronDown
-                className={`h-4 w-4 text-black/35 dark:text-white/35 transition-transform duration-300 ${expandedRows.has(position.id) ? 'rotate-180' : ''}`}
-              />
-            </button>
+              <span className={`font-semibold text-[13px] ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {position.pnl >= 0 ? '+' : ''}${Math.abs(position.pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+              </span>
+            </div>
 
-            {/* Expandable Details */}
-            {expandedRows.has(position.id) && (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-black/8 bg-black/[0.02] p-4 dark:border-white/8 dark:bg-white/[0.02]">
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Close Price</span>
-                    <p className="text-[11px] font-semibold text-foreground">${position.close.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</p>
-                </div>
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Size</span>
-                    <p className="text-[11px] font-semibold text-foreground">{position.size.toFixed(4)}</p>
-                </div>
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Leverage</span>
-                    <p className="text-[11px] font-semibold text-foreground">{position.leverage}</p>
-                </div>
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Mode</span>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground">{position.marginMode}</p>
-                </div>
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Fee</span>
-                    <p className="text-[11px] font-semibold text-black/55 dark:text-white/55">${position.fee.toFixed(4)}</p>
-                </div>
-                <div className="flex flex-col">
-                    <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Return %</span>
-                    <p className={`text-[11px] font-semibold ${position.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
-                  </p>
-                </div>
-                <div className="col-span-2 flex flex-col border-t border-black/8 pt-2 dark:border-white/8">
-                  <span className="mb-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Date Closed</span>
-                  <p className="text-[11px] text-black/55 dark:text-white/55">{position.createdAt}</p>
-                </div>
+            <div className="grid grid-cols-3 gap-y-3 gap-x-2 text-[10px]">
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Entry</span>
+                <span className="text-black/55 dark:text-white/55">${position.entry.toFixed(2)}</span>
               </div>
-            )}
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Close</span>
+                <span className="text-black/55 dark:text-white/55">${position.close.toFixed(2)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Size</span>
+                <span className="text-black/55 dark:text-white/55">{position.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
+              </div>
+              
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Lev.</span>
+                <span className="text-black/55 dark:text-white/55">{position.leverage}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Fee</span>
+                <span className="text-black/55 dark:text-white/55">${position.fee.toFixed(2)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Return %</span>
+                <span className={position.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-2 text-[9px] text-black/35 dark:border-white/5 dark:text-white/35">
+              <span>Closed</span>
+              <span>{position.createdAt}</span>
+            </div>
           </div>
         ))}
       </div>

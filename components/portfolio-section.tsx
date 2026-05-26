@@ -100,13 +100,11 @@ export function PortfolioSection() {
 
         <PortfolioOverview />
 
-        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-5">
-          <div className="h-full xl:col-span-3">
+        <div className="flex flex-col gap-3 md:gap-5">
+          <div className="w-full h-[350px] md:h-[450px]">
             <PnLChart />
           </div>
-          <div className="h-full xl:col-span-2">
-            <MonthlyCalendar />
-          </div>
+          <MonthlyCalendar />
         </div>
 
         <OpenPositions />
