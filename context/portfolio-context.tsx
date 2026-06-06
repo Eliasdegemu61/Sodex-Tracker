@@ -325,6 +325,20 @@ export function PortfolioProvider({
     }
   }, [clearWalletAddress]);
 
+  // Immediately restore wallet address from localStorage so UI never flashes bind form
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (initialWalletAddress) return;
+
+    const savedAddress = localStorage.getItem('portfolio_wallet_address');
+    const savedUserId = localStorage.getItem('portfolio_user_id');
+    if (savedAddress) {
+      setWalletAddressState(savedAddress);
+      setSourceWalletAddressState(savedAddress);
+    }
+    if (savedUserId) setUserIdState(savedUserId);
+  }, [initialWalletAddress]);
+
   // Initialize saved portfolio with the same fast path used by manual binding.
   useEffect(() => {
     const init = async () => {

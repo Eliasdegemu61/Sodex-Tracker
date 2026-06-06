@@ -1,21 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   Loader2, 
   AlertCircle, 
-  Clock, 
   Search, 
   X, 
-  ArrowUpRight, 
   Info, 
-  Wallet,
-  TrendingUp,
-  RefreshCw,
-  ChevronDown
+  TrendingUp
 } from 'lucide-react';
 import { usePortfolio } from '@/context/portfolio-context';
 import { 
@@ -41,7 +33,7 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -120,50 +112,48 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 animate-in fade-in duration-700">
+    <div className="space-y-2 text-foreground">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 border-b border-white/5 pb-4 md:pb-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">Accrued Funding</h1>
-            <Badge variant="outline" className="text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0 h-4 bg-secondary/50 border-border/50 text-muted-foreground/60">BETA</Badge>
+      <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Accrued Funding</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-border text-muted-foreground" style={{ borderRadius: 'var(--radius-sm)' }}>BETA</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground/40">
-            <Wallet className="w-3 md:w-3.5 h-3 md:h-3.5" />
-            <span className="font-mono truncate max-w-[150px] md:max-w-none">{walletAddress}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-muted-foreground/50 truncate max-w-[150px] md:max-w-none">{walletAddress}</span>
             {onClear && (
-              <button onClick={onClear} className="ml-1 text-muted-foreground/20 hover:text-red-400 transition-colors">
+              <button onClick={onClear} className="text-muted-foreground/30 hover:text-destructive transition-colors">
                 <X className="w-3 h-3" />
               </button>
             )}
           </div>
         </div>
-
-        <div className="flex items-center justify-between md:justify-end gap-6 bg-white/[0.02] md:bg-transparent p-3 md:p-0 rounded-xl border border-white/5 md:border-none">
-          <div className="text-left md:text-right">
-            <p className="text-[8px] md:text-[9px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em] mb-0.5">Total Net Accrued</p>
-            <p className={cn(
-              "text-xl md:text-2xl font-bold tracking-tighter tabular-nums",
-              totalNetAccrued >= 0 ? "text-green-500" : "text-red-500"
+        <div className="grid grid-cols-2 divide-x divide-border">
+          <div className="flex flex-col gap-1.5 p-3">
+            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Total Net Accrued</span>
+            <span className={cn(
+              "text-lg font-bold tracking-tight",
+              totalNetAccrued >= 0 ? "text-[var(--success)]" : "text-destructive"
             )}>
               {totalNetAccrued >= 0 ? '+' : '-'}${Math.abs(totalNetAccrued).toFixed(4)}
-            </p>
+            </span>
           </div>
-          <div className="hidden md:block h-10 w-px bg-white/5" />
-          <div className="text-right block md:hidden">
-            <RefreshCw className={cn("w-3.5 h-3.5 text-muted-foreground/20", isLoading && "animate-spin")} />
+          <div className="flex flex-col gap-1.5 p-3">
+            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Positions</span>
+            <span className="text-lg font-bold tracking-tight text-foreground">{positions.length}</span>
           </div>
         </div>
       </div>
 
       {positions.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-white/5 rounded-3xl">
-          <p className="text-sm text-muted-foreground/20 font-medium">No open positions found.</p>
+        <div className="border border-dashed border-border bg-card py-16 flex items-center justify-center" style={{ borderRadius: 'var(--radius-md)' }}>
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">No open positions found.</p>
         </div>
       ) : (
         <>
           {/* Mobile View: Card List */}
-          <div className="grid grid-cols-1 gap-3 md:hidden">
+          <div className="md:hidden divide-y divide-border border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
             {positions.map((pos) => {
               const notionalValue = Math.abs(parseFloat(pos.positionSize)) * pos.markPrice;
               const fundingRate = pos.fundingData ? parseFloat(pos.fundingData.fundingRate) : 0;
@@ -176,95 +166,89 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
               const isExpanded = expandedId === pos.positionId;
 
               return (
-                <Card 
+                <div 
                   key={pos.positionId} 
-                  className={cn(
-                    "bg-white/[0.02] border-white/5 rounded-2xl overflow-hidden transition-all duration-300",
-                    isExpanded ? "ring-1 ring-white/10" : ""
-                  )}
-                  onClick={() => setExpandedId(isExpanded ? null : pos.positionId)}
+                  className="hover:bg-muted/20 transition-colors"
                 >
-                  <div className="p-4 flex items-center justify-between">
+                  <button onClick={() => setExpandedId(isExpanded ? null : pos.positionId)} className="w-full flex items-center justify-between p-4 text-left">
                     <div className="flex items-center gap-3">
                       {getTokenLogo(pos.symbol) ? (
-                        <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center p-1.5 border border-white/5 shrink-0">
-                          <img src={getTokenLogo(pos.symbol)} alt="" className="w-full h-full object-contain" />
-                        </div>
+                        <img src={getTokenLogo(pos.symbol)} alt="" className="w-5 h-5 rounded-full bg-muted object-contain" />
                       ) : (
-                        <div className="w-2 h-2 rounded-full bg-white/10 shrink-0" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 shrink-0" />
                       )}
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold">{pos.symbol}</span>
+                          <span className="text-sm font-bold text-foreground">{pos.symbol}</span>
                           <span className={cn(
-                            "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest",
-                            pos.positionSide === 'LONG' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
-                          )}>
+                            "text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-widest border",
+                            pos.positionSide === 'LONG' ? "border-[var(--success)]/30 text-[var(--success)]" : "border-destructive/30 text-destructive"
+                          )} style={{ borderRadius: 'var(--radius-sm)' }}>
                             {pos.positionSide}
                           </span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-widest mt-0.5">
-                          {pos.leverage}X Leverage
+                        <p className="text-[9px] text-muted-foreground/50 font-bold uppercase tracking-widest mt-0.5">
+                          {pos.leverage}X
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={cn("text-sm font-bold tabular-nums", isReceiving ? "text-green-500" : "text-red-500")}>
+                      <p className={cn("text-sm font-bold tabular-nums", isReceiving ? "text-[var(--success)]" : "text-destructive")}>
                         {isReceiving ? '+' : '-'}${Math.abs(netAccrued).toFixed(4)}
                       </p>
-                      <p className="text-[9px] text-muted-foreground/20 font-bold uppercase tracking-widest">Accrued</p>
+                      <p className="text-[8px] text-muted-foreground/40 font-bold uppercase tracking-widest">Accrued</p>
                     </div>
-                  </div>
+                  </button>
                   
                   {isExpanded && (
-                    <div className="px-4 pb-4 pt-2 border-t border-white/5 bg-white/[0.01] animate-in slide-in-from-top-2 duration-300">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-[8px] font-bold text-muted-foreground/30 uppercase tracking-widest">Mark Price</p>
-                          <p className="text-xs font-mono text-muted-foreground/60">${pos.markPrice.toFixed(2)}</p>
+                    <div className="px-4 pb-4 pt-2 border-t border-border">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">Mark Price</span>
+                          <span className="text-[11px] font-bold text-foreground">${pos.markPrice.toFixed(2)}</span>
                         </div>
-                        <div className="space-y-1 text-right">
-                          <p className="text-[8px] font-bold text-muted-foreground/30 uppercase tracking-widest">Notional</p>
-                          <p className="text-xs font-mono text-muted-foreground/60">${notionalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                        <div className="flex flex-col gap-0.5 text-right">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">Notional</span>
+                          <span className="text-[11px] font-bold text-foreground">${notionalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[8px] font-bold text-muted-foreground/30 uppercase tracking-widest">Funding Rate</p>
-                          <p className={cn("text-xs font-mono", fundingRate > 0 ? "text-green-500/70" : "text-red-500/70")}>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">Funding Rate</span>
+                          <span className={cn("text-[11px] font-bold", fundingRate > 0 ? "text-[var(--success)]" : "text-destructive")}>
                             {(fundingRate * 100).toFixed(6)}%
-                          </p>
+                          </span>
                         </div>
-                        <div className="space-y-1 text-right">
-                          <p className="text-[8px] font-bold text-muted-foreground/30 uppercase tracking-widest">Next Settlement</p>
-                          <p className="text-xs font-mono text-muted-foreground/60">
+                        <div className="flex flex-col gap-0.5 text-right">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">Next Settlement</span>
+                          <span className="text-[11px] font-bold text-foreground">
                             {Math.floor(timeLeft / 60000)}:{(Math.floor((timeLeft % 60000) / 1000)).toString().padStart(2, '0')}
-                          </p>
+                          </span>
                         </div>
                       </div>
-                      <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-white/10" style={{ width: `${fraction * 100}%` }} />
+                      <div className="mt-3 h-px w-full bg-border">
+                        <div className="h-full bg-foreground/10" style={{ width: `${fraction * 100}%` }} />
                       </div>
                     </div>
                   )}
-                </Card>
+                </div>
               );
             })}
           </div>
 
           {/* Desktop View: Formal Table */}
-          <div className="hidden md:block overflow-hidden border border-white/5 rounded-2xl bg-white/[0.01]">
-            <table className="w-full text-left border-collapse">
+          <div className="hidden md:block border border-border bg-card overflow-hidden" style={{ borderRadius: 'var(--radius-md)' }}>
+            <table className="w-full text-[10px] text-left">
               <thead>
-                <tr className="bg-white/[0.02] border-b border-white/5">
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Symbol</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Position</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Mark Price</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Notional</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Funding Rate</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Settlement</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest text-right">Accrued (Est.)</th>
+                <tr className="border-b border-border">
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Symbol</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Position</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Mark Price</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Notional</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Funding Rate</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Settlement</th>
+                  <th className="py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground text-right">Accrued</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-border">
                 {positions.map((pos) => {
                   const notionalValue = Math.abs(parseFloat(pos.positionSize)) * pos.markPrice;
                   const fundingRate = pos.fundingData ? parseFloat(pos.fundingData.fundingRate) : 0;
@@ -276,68 +260,53 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
                   const isReceiving = netAccrued > 0;
 
                   return (
-                    <tr key={pos.positionId} className="group hover:bg-white/[0.02] transition-colors">
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2.5">
+                    <tr key={pos.positionId} className="hover:bg-muted/20 transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
                           {getTokenLogo(pos.symbol) ? (
-                            <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center p-1 border border-white/5 shrink-0">
-                              <img 
-                                src={getTokenLogo(pos.symbol)} 
-                                alt="" 
-                                className="w-full h-full object-contain"
-                                onError={(e) => (e.currentTarget.style.display = 'none')}
-                              />
-                            </div>
+                            <img src={getTokenLogo(pos.symbol)} alt="" className="w-4 h-4 rounded-full bg-muted object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
                           ) : (
-                            <div className="w-1.5 h-1.5 rounded-full bg-white/10 shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 shrink-0" />
                           )}
-                          <span className="text-sm font-bold tracking-tight">{pos.symbol}</span>
+                          <span className="text-[11px] font-bold text-foreground">{pos.symbol}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="py-3 px-3">
                         <div className="flex items-center gap-2">
                           <span className={cn(
-                            "text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
-                            pos.positionSide === 'LONG' ? "bg-green-500/10 text-green-500/80" : "bg-red-500/10 text-red-500/80"
-                          )}>
+                            "text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-widest border",
+                            pos.positionSide === 'LONG' ? "border-[var(--success)]/30 text-[var(--success)]" : "border-destructive/30 text-destructive"
+                          )} style={{ borderRadius: 'var(--radius-sm)' }}>
                             {pos.positionSide}
                           </span>
-                          <span className="text-[10px] font-bold text-muted-foreground/30">{pos.leverage}X</span>
+                          <span className="text-[8px] font-bold text-muted-foreground/50">{pos.leverage}X</span>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-xs font-mono text-muted-foreground/60 tabular-nums">
+                      <td className="py-3 px-3 text-[10px] font-bold text-muted-foreground tabular-nums">
                         ${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="px-5 py-4 text-xs font-mono text-muted-foreground/60 tabular-nums">
+                      <td className="py-3 px-3 text-[10px] font-bold text-muted-foreground tabular-nums">
                         ${notionalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-col gap-0.5">
-                          <span className={cn("text-xs font-mono tabular-nums", fundingRate > 0 ? "text-green-500/70" : "text-red-500/70")}>
-                            {(fundingRate * 100).toFixed(6)}%
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/20 font-bold uppercase tracking-widest">Hourly</span>
-                        </div>
+                      <td className="py-3 px-3">
+                        <span className={cn("text-[10px] font-bold tabular-nums", fundingRate > 0 ? "text-[var(--success)]" : "text-destructive")}>
+                          {(fundingRate * 100).toFixed(6)}%
+                        </span>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="py-3 px-3">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-mono text-muted-foreground/60 tabular-nums">
+                          <span className="text-[10px] font-bold text-muted-foreground tabular-nums">
                             {Math.floor(timeLeft / 60000)}:{(Math.floor((timeLeft % 60000) / 1000)).toString().padStart(2, '0')}
                           </span>
-                          <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-muted-foreground/20" style={{ width: `${fraction * 100}%` }} />
+                          <div className="w-12 h-0.5 bg-border">
+                            <div className="h-full bg-foreground/10" style={{ width: `${fraction * 100}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className={cn("text-base font-bold tabular-nums", isReceiving ? "text-green-500" : "text-red-500")}>
-                            {isReceiving ? '+' : '-'}${Math.abs(netAccrued).toFixed(6)}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/20 font-bold uppercase tracking-widest">
-                            {isReceiving ? 'RECEIPT' : 'PAYMENT'}
-                          </span>
-                        </div>
+                      <td className="py-3 px-3 text-right">
+                        <span className={cn("text-[11px] font-bold tabular-nums", isReceiving ? "text-[var(--success)]" : "text-destructive")}>
+                          {isReceiving ? '+' : '-'}${Math.abs(netAccrued).toFixed(6)}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -349,9 +318,9 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
       )}
       
       <div className="flex items-center gap-2 px-1">
-        <Info className="w-3 h-3 text-muted-foreground/20" />
-        <p className="text-[8px] md:text-[10px] text-muted-foreground/20 font-medium uppercase tracking-wider">
-          Estimates are calculated based on real-time mark price and linear time-decay since the last settlement.
+        <Info className="w-3 h-3 text-muted-foreground/30" />
+        <p className="text-[8px] text-muted-foreground/40 font-bold uppercase tracking-wider">
+          Estimates based on real-time mark price and linear time-decay since last settlement.
         </p>
       </div>
     </div>
@@ -412,7 +381,7 @@ export function AccruedFunding({ initialSearchAddress }: { initialSearchAddress?
   if (!userId || !walletAddress) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <div className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 bg-white/[0.01] p-6 md:p-10 shadow-xl">
+        <div className="w-full max-w-lg border border-border bg-card p-6 md:p-10" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="mb-6 md:mb-8 space-y-1">
             <h2 className="text-2xl md:text-4xl font-bold tracking-tighter text-foreground">Funding</h2>
             <p className="text-[10px] md:text-sm font-medium text-muted-foreground/40 tracking-wider">inspect real-time funding for any address</p>
@@ -427,21 +396,23 @@ export function AccruedFunding({ initialSearchAddress }: { initialSearchAddress?
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="0x..."
-                className="w-full h-11 md:h-14 rounded-xl md:rounded-2xl border border-white/5 bg-white/[0.02] pl-10 pr-4 text-xs md:text-sm font-medium text-foreground placeholder:text-muted-foreground/20 focus:outline-none focus:border-white/10 transition-all"
+                className="w-full h-11 md:h-14 border border-border bg-transparent pl-10 pr-4 text-xs md:text-sm font-medium text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground transition-all"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               />
             </div>
 
             {error && (
-              <div className="rounded-xl border border-red-500/10 bg-red-500/5 p-3 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500/50" />
-                <p className="text-[10px] md:text-xs font-medium text-red-500/70">{error}</p>
+              <div className="border border-destructive/20 p-3 flex items-center gap-2" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <AlertCircle className="w-4 h-4 text-destructive/60" />
+                <p className="text-[10px] md:text-xs font-medium text-destructive/80">{error}</p>
               </div>
             )}
 
             <button
               onClick={() => handleSearch()}
               disabled={isLoading || !searchInput.trim()}
-              className="flex w-full h-11 md:h-14 items-center justify-center gap-2 rounded-xl md:rounded-2xl bg-foreground text-background transition-all active:scale-[0.98] hover:bg-foreground/90 disabled:opacity-20 font-bold text-xs md:text-sm tracking-widest"
+              className="flex w-full h-11 md:h-14 items-center justify-center gap-2 bg-foreground text-background transition-all hover:opacity-90 disabled:opacity-20 font-bold text-xs md:text-sm tracking-widest"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <TrendingUp className="h-4 w-4" />
               <span>Inspect Funding</span>

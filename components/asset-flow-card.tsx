@@ -151,93 +151,87 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
 
   if (isLoading) {
     return (
-      <Card className="flex min-h-[200px] flex-col items-center justify-center rounded-[2rem] border border-black/8 bg-white p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] animate-pulse dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <div className="mb-4 h-8 w-8 rounded-full border-2 border-black/15 border-t-black animate-spin dark:border-white/15 dark:border-t-white" />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Checking holdings</p>
-      </Card>
+      <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Asset Allocation</span>
+        </div>
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="flex min-h-[200px] flex-col items-center justify-center rounded-[2rem] border border-black/8 bg-white p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35 dark:text-white/35">{error}</p>
-      </Card>
+      <div className="border border-destructive/30 bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Asset Allocation</span>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-destructive">{error}</p>
+        </div>
+      </div>
     );
   }
 
   if (assets.length === 0) {
     return (
-      <Card className="flex min-h-[200px] flex-col items-center justify-center rounded-[2rem] border border-black/8 bg-white p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/25 dark:text-white/25">No holdings detected</p>
-      </Card>
+      <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Asset Allocation</span>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">No holdings detected</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="flex h-full flex-col rounded-[14px] border border-black/8 bg-white p-2.5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-5 lg:min-h-[520px]">
-      <div className="flex shrink-0 items-end justify-between gap-2 md:gap-3 px-1 md:px-0">
-        <div>
-          <h3 className="text-[8px] md:text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Asset allocation</h3>
-          <p className="mt-0.5 md:mt-2 text-lg md:text-2xl font-semibold tracking-[-0.04em] text-foreground leading-none md:leading-normal">
-            ${totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-          </p>
+    <div className="flex flex-col border border-border bg-card text-foreground" style={{ borderRadius: 'var(--radius-md)' }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Asset Allocation</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">{assets.length} holdings</span>
+          <span className="text-sm font-bold tracking-tight text-foreground">${totalBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
         </div>
-        <p className="text-right text-[8px] md:text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30 mb-0.5 md:mb-1">
-          {assets.length} holdings
-        </p>
       </div>
 
       <div className={cn(
-        "mt-3 md:mt-5 grid min-h-0 flex-1 grid-cols-1 content-start gap-1 md:gap-2 transition-all duration-300",
-        showMore ? "overflow-y-auto pr-2 custom-scrollbar" : "overflow-hidden"
+        "p-3 grid grid-cols-1 content-start gap-1 transition-all duration-300",
+        showMore ? "overflow-y-auto max-h-96" : "overflow-hidden"
       )}>
         {displayedAssets.map((asset, idx) => {
           const tokenLogo = getTokenLogo(asset.coin);
           return (
             <div
               key={idx}
-              className="group relative flex min-h-[32px] md:min-h-[46px] items-center justify-between rounded-[10px] md:rounded-2xl border border-black/8 bg-black/[0.02] py-1.5 px-2 md:p-3 transition-all hover:bg-black/[0.04] dark:border-white/8 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
+              className="group relative flex items-center justify-between border border-border py-2 px-3 hover:bg-muted/20 transition-colors"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <div
-                className="absolute inset-y-1.5 md:inset-y-2 left-0 w-[3px] md:w-1 rounded-r-full opacity-70 transition-opacity group-hover:opacity-100"
+                className="absolute inset-y-2 left-0 w-0.5 opacity-60 group-hover:opacity-100 transition-opacity"
                 style={{ backgroundColor: asset.color }}
               />
-
-              <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3 pl-1.5 md:pl-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2.5 pl-2">
                 <div className="relative shrink-0">
                   {tokenLogo ? (
-                    <img
-                      src={tokenLogo}
-                      alt={asset.coin}
-                      className="h-4 w-4 md:h-6 md:w-6 rounded-full bg-black/[0.06] p-0.5 dark:bg-white/[0.06]"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
-                    />
+                    <img src={tokenLogo} alt={asset.coin} className="h-5 w-5 rounded-full bg-muted" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   ) : (
-                    <div className="flex h-4 w-4 md:h-6 md:w-6 items-center justify-center rounded-full bg-black/[0.06] text-[6px] md:text-[8px] font-semibold text-black/45 dark:bg-white/[0.06] dark:text-white/45">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-bold text-muted-foreground">
                       {asset.coin[0]}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <span className="block truncate text-[9px] md:text-[11px] font-semibold tracking-tight text-foreground leading-tight">
-                    {getDisplayName(asset.coin)}
-                  </span>
+                  <span className="block truncate text-[11px] font-bold tracking-tight text-foreground">{getDisplayName(asset.coin)}</span>
                   {asset.isFuture && (
-                    <span className="mt-0.5 block text-[6px] md:text-[7px] font-semibold uppercase leading-none tracking-[0.14em] text-black/30 dark:text-white/30">futures</span>
+                    <span className="block text-[7px] font-bold uppercase tracking-widest text-muted-foreground/50">futures</span>
                   )}
                 </div>
               </div>
-
-              <div className="shrink-0 text-right">
-                <p className="text-[9px] md:text-[11px] font-semibold text-black/60 dark:text-white/60">
-                  {formatTokenBalance(asset.balance, asset.coin)}
-                </p>
-              </div>
+              <span className="text-[10px] font-bold text-muted-foreground shrink-0">{formatTokenBalance(asset.balance, asset.coin)}</span>
             </div>
           );
         })}
@@ -246,26 +240,12 @@ export function AssetFlowCard({ walletAddress }: AssetFlowCardProps) {
       {hasMore && (
         <button
           onClick={() => setShowMore(!showMore)}
-          className="mt-2 md:mt-4 shrink-0 rounded-[10px] md:rounded-2xl border border-black/8 bg-black/[0.02] py-1.5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-black/35 transition-colors hover:text-black dark:border-white/10 dark:bg-white/[0.02] dark:text-white/35 dark:hover:text-white"
+          className="mx-3 mb-3 border border-border py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+          style={{ borderRadius: 'var(--radius-sm)' }}
         >
-          {showMore ? 'Show Less' : `+${assets.length - previewCount} More Assets`}
+          {showMore ? 'Show Less' : `+${assets.length - previewCount} More`}
         </button>
       )}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(155, 155, 155, 0.2);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(155, 155, 155, 0.4);
-        }
-      `}</style>
-    </Card>
+    </div>
   );
 }

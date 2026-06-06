@@ -116,23 +116,23 @@ export function FundFlowChart() {
     }, [data, selectedToken, timeRange])
     if (isLoading) {
         return (
-            <Card className="p-8 bg-background border border-border rounded-lg animate-pulse">
+            <Card className="p-8 bg-background border border-border animate-pulse" style={{ borderRadius: 'var(--radius-md)' }}>
                 <h3 className="text-xs font-semibold text-muted-foreground/60 mb-8">Fund Flow</h3>
-                <div className="h-64 bg-secondary/10 rounded-lg" />
+                <div className="h-64 bg-secondary/10" style={{ borderRadius: 'var(--radius-sm)' }} />
             </Card>
         )
     }
 
     return (
-        <Card className="p-6 md:p-8 bg-background border border-border rounded-lg flex flex-col">
+        <Card className="p-6 md:p-8 bg-background border border-border flex flex-col" style={{ borderRadius: 'var(--radius-md)' }}>
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Fund Flow</h3>
                 <div className="flex flex-wrap items-center gap-2">
                     <Select value={selectedToken} onValueChange={setSelectedToken}>
-                        <SelectTrigger className="w-[100px] h-8 bg-transparent border border-border rounded-lg text-[10px] font-bold text-muted-foreground uppercase hover:bg-secondary/10 transition-colors">
+                        <SelectTrigger className="w-[100px] h-8 bg-transparent border border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-muted transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
                             <SelectValue placeholder="Asset" />
                         </SelectTrigger>
-                        <SelectContent className="bg-card border border-border rounded-lg">
+                        <SelectContent className="bg-card border border-border" style={{ borderRadius: 'var(--radius-sm)' }}>
                             {tokens.map((t) => (
                                 <SelectItem key={t} value={t} className="text-[10px] font-bold uppercase">{t}</SelectItem>
                             ))}
@@ -200,7 +200,7 @@ export function FundFlowChart() {
                                         const d = new Date(label);
                                         const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : label;
                                         return (
-                                            <div className="bg-card border border-border/50 p-4 rounded-xl shadow-2xl min-w-[160px]">
+                                            <div className="bg-card border border-border p-4 min-w-[160px]" style={{ borderRadius: 'var(--radius-sm)' }}>
                                                 <p className="text-[9px] text-muted-foreground/40 font-bold   mb-3">{dateStr}</p>
                                                 <div className="space-y-2">
                                                     {payload.map((entry: any, index: number) => (
@@ -280,7 +280,7 @@ export function FundFlowChart() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg border border-border">
+                <div className="flex items-center gap-3 px-3 py-1.5 border border-border" style={{ borderRadius: 'var(--radius-sm)' }}>
                     <Checkbox
                         id="show-net-remaining"
                         checked={showNetRemaining}

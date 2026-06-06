@@ -81,202 +81,136 @@ export function PositionsTable() {
 
   if (!positions || positions.length === 0) {
     return (
-      <Card className="rounded-[2rem] border border-black/8 bg-white p-6 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <h3 className="mb-4 text-lg font-semibold tracking-[-0.03em] text-foreground">Position History</h3>
-        <p className="text-sm text-muted-foreground">No position history available.</p>
-      </Card>
+      <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Position History</span>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">No position history available</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="rounded-[2rem] border border-black/8 bg-white p-3 sm:p-5 text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-[10px] font-bold text-black/35 dark:text-white/35 uppercase tracking-[0.22em]">
-          Position history
-        </h3>
+    <div className="border border-border bg-card text-foreground overflow-hidden" style={{ borderRadius: 'var(--radius-md)' }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Position History</span>
         {(hasMoreHistory || isHistoryLoading) && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">
-              Showing recent {positions.length.toLocaleString()}
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">
+              {positions.length.toLocaleString()} records
             </span>
-            <Button
+            <button
               onClick={handleContinue}
               disabled={isHistoryLoading || !fetchProgress.nextCursor}
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-xl px-3 text-[9px] font-semibold uppercase tracking-[0.16em]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest border border-border text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-30 transition-colors"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
-              {isHistoryLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  Loading full history
-                </>
-              ) : (
-                'Load 1K+ history'
-              )}
-            </Button>
+              {isHistoryLoading ? <><Loader2 className="h-3 w-3 animate-spin" /> Loading</> : 'Load More'}
+            </button>
           </div>
         )}
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style dangerouslySetInnerHTML={{ __html: `
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-        `}} />
-        <div className="no-scrollbar overflow-x-auto">
-          <table className="w-full text-[11px] border-separate border-spacing-y-1.5">
-            <thead>
-              <tr className="text-black/35 dark:text-white/35 font-bold uppercase tracking-[0.18em]">
-                <th className="text-left py-2 px-3">Pair</th>
-                <th className="text-left py-2 px-3">Side</th>
-                <th className="text-left py-2 px-3">Mode</th>
-                <th className="text-right py-2 px-3">Entry</th>
-                <th className="text-right py-2 px-3">Close</th>
-                <th className="text-right py-2 px-3">Size</th>
-                <th className="text-right py-2 px-3">Leverage</th>
-                <th className="text-right py-2 px-3">Fee</th>
-                <th className="text-right py-2 px-3">PnL</th>
-                <th className="text-right py-2 px-3">%</th>
-                <th className="text-left py-2 px-3">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedPositions.map((position) => (
-                <tr key={position.id} className="group relative rounded-xl bg-black/[0.02] transition-all hover:bg-black/[0.04] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]">
-                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl font-semibold text-foreground">{position.pair}</td>
-                  <td className="py-3 px-3">
-                      <span className={`rounded-md px-2 py-0.5 text-[9px] font-semibold tracking-[0.18em] ${position.type === 'long' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
-                      {position.type.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3">
-                    <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
-                      {position.marginMode}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">${position.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-                  <td className="py-3 px-3 text-right font-semibold text-foreground">${position.close.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{position.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-                  <td className="py-3 px-3 text-right font-semibold text-foreground">{position.leverage}</td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">${position.fee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</td>
-                  <td className={`py-3 px-3 text-right font-semibold ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {position.pnl >= 0 ? '+' : ''}${Math.abs(position.pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                  </td>
-                  <td className="py-3 px-3 text-right">
-                    <div className={`flex items-center justify-end gap-1 font-semibold ${position.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl text-left text-[9px] text-black/35 dark:text-white/35">{position.createdAt}</td>
-                </tr>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-[10px] text-left">
+          <thead>
+            <tr className="border-b border-border">
+              {['Pair','Side','Mode','Entry','Close','Size','Lev.','Fee','PnL','%','Date'].map((h,i) => (
+                <th key={h} className={`py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground ${i > 2 && i < 10 ? 'text-right' : ''}`}>{h}</th>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {paginatedPositions.map((position) => (
+              <tr key={position.id} className="hover:bg-muted/20 transition-colors">
+                <td className="py-3 px-3 font-bold text-foreground">{position.pair}</td>
+                <td className="py-3 px-3">
+                  <span className={`text-[9px] font-bold tracking-widest ${position.type === 'long' ? 'text-[var(--success)]' : 'text-destructive'}`}>
+                    {position.type.toUpperCase()}
+                  </span>
+                </td>
+                <td className="py-3 px-3">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{position.marginMode}</span>
+                </td>
+                <td className="py-3 px-3 text-right text-muted-foreground">${position.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                <td className="py-3 px-3 text-right font-bold text-foreground">${position.close.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                <td className="py-3 px-3 text-right text-muted-foreground">{position.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+                <td className="py-3 px-3 text-right font-bold text-foreground">{position.leverage}</td>
+                <td className="py-3 px-3 text-right text-muted-foreground">${position.fee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</td>
+                <td className={`py-3 px-3 text-right font-bold ${position.pnl >= 0 ? 'text-[var(--success)]' : 'text-destructive'}`}>
+                  {position.pnl >= 0 ? '+' : ''}${Math.abs(position.pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </td>
+                <td className={`py-3 px-3 text-right font-bold ${position.pnlPercent >= 0 ? 'text-[var(--success)]' : 'text-destructive'}`}>
+                  {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
+                </td>
+                <td className="py-3 px-3 text-left text-[9px] text-muted-foreground/50">{position.createdAt}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Mobile List */}
-      <div className="md:hidden space-y-3">
+      <div className="md:hidden divide-y divide-border">
         {paginatedPositions.map((position) => (
-          <div key={position.id} className="rounded-2xl border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div key={position.id} className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{position.pair}</span>
-                <span className={`rounded px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] ${position.type === 'long' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
+                <span className="font-bold text-sm text-foreground">{position.pair}</span>
+                <span className={`text-[8px] font-bold tracking-widest ${position.type === 'long' ? 'text-[var(--success)]' : 'text-destructive'}`}>
                   {position.type.toUpperCase()}
                 </span>
-                <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
-                  {position.marginMode}
-                </span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">{position.marginMode}</span>
               </div>
-              <span className={`font-semibold text-[13px] ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`font-bold text-sm ${position.pnl >= 0 ? 'text-[var(--success)]' : 'text-destructive'}`}>
                 {position.pnl >= 0 ? '+' : ''}${Math.abs(position.pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
               </span>
             </div>
-
-            <div className="grid grid-cols-3 gap-y-3 gap-x-2 text-[10px]">
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Entry</span>
-                <span className="text-black/55 dark:text-white/55">${position.entry.toFixed(2)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Close</span>
-                <span className="text-black/55 dark:text-white/55">${position.close.toFixed(2)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Size</span>
-                <span className="text-black/55 dark:text-white/55">{position.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Lev.</span>
-                <span className="text-black/55 dark:text-white/55">{position.leverage}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Fee</span>
-                <span className="text-black/55 dark:text-white/55">${position.fee.toFixed(2)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Return %</span>
-                <span className={position.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}>
-                  {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
-                </span>
-              </div>
+            <div className="grid grid-cols-3 gap-y-2.5 gap-x-2">
+              {[['Entry', `$${position.entry.toFixed(2)}`], ['Close', `$${position.close.toFixed(2)}`], ['Size', position.size.toLocaleString(undefined,{maximumFractionDigits:4})], ['Lev.', position.leverage], ['Fee', `$${position.fee.toFixed(2)}`], ['Return', `${position.pnlPercent >= 0 ? '+' : ''}${position.pnlPercent.toFixed(2)}%`]].map(([label, val]) => (
+                <div key={label} className="flex flex-col gap-0.5">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">{label}</span>
+                  <span className="text-[11px] font-bold text-muted-foreground">{val}</span>
+                </div>
+              ))}
             </div>
-            
-            <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-2 text-[9px] text-black/35 dark:border-white/5 dark:text-white/35">
-              <span>Closed</span>
-              <span>{position.createdAt}</span>
+            <div className="mt-2.5 pt-2.5 border-t border-border flex justify-between text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest">
+              <span>Closed</span><span>{position.createdAt}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Pagination Controls */}
-      <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-black/8 pt-6 dark:border-white/8 sm:flex-row">
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/30 dark:text-white/30">Show rows</span>
-          <div className="flex gap-1 rounded-xl border border-black/8 bg-black/[0.03] p-1 dark:border-white/8 dark:bg-white/[0.03]">
-            {[5, 10, 20, 50].map((value) => (
-              <button
-                key={value}
-                onClick={() => handleRowsPerPageChange(value)}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg text-[10px] font-semibold transition-all ${rowsPerPage === value
-                  ? 'bg-white text-black'
-                  : 'text-black/45 hover:bg-black/[0.06] hover:text-black dark:text-white/45 dark:hover:bg-white/[0.06] dark:hover:text-white'
-                  }`}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
+      <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
+        <div className="flex items-center gap-1">
+          {[5, 10, 20, 50].map((value) => (
+            <button
+              key={value}
+              onClick={() => handleRowsPerPageChange(value)}
+              className={`px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border transition-colors ${rowsPerPage === value
+                ? 'border-foreground bg-foreground text-background'
+                : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
+                }`}
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              {value}
+            </button>
+          ))}
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className="flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-4 py-2 text-[11px] font-semibold text-black/60 transition-all hover:bg-black/[0.07] hover:text-black disabled:cursor-not-allowed disabled:opacity-25 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/60 dark:hover:bg-white/[0.07] dark:hover:text-white"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            Prev
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">{currentPage} / {totalPages}</span>
+        <div className="flex gap-1">
+          <button onClick={handlePrevPage} disabled={currentPage === 1} className="p-1.5 border border-border text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-25 transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
-
-          <span className="min-w-[40px] text-center text-[11px] font-semibold text-black/35 dark:text-white/35">
-            {currentPage} / {totalPages}
-          </span>
-
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className="flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-4 py-2 text-[11px] font-semibold text-black/60 transition-all hover:bg-black/[0.07] hover:text-black disabled:cursor-not-allowed disabled:opacity-25 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/60 dark:hover:bg-white/[0.07] dark:hover:text-white"
-          >
-            Next
-            <ChevronRight className="w-3.5 h-3.5" />
+          <button onClick={handleNextPage} disabled={currentPage === totalPages} className="p-1.5 border border-border text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-25 transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

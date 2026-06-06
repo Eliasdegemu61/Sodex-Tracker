@@ -32,6 +32,7 @@ import { OverallDepositsCard, AssetsSkeleton } from '@/components/overall-token-
 import { TrackerSection } from '@/components/tracker-section'
 import { DemoTrading } from '@/components/demo-trading'
 import { Footer } from '@/components/footer'
+import { DexStatusDashboard } from '@/components/dex-status-dashboard'
 import { SopointsAnalyzer } from '@/components/sopoints-analyzer'
 import { AboutSodex } from '@/components/about-sodex'
 import { SidebarNav } from '@/components/sidebar-nav'
@@ -362,109 +363,110 @@ export default function Dashboard() {
   return (
     <SidebarProvider>
       <div className={cn(
-        "flex min-h-screen w-full font-sans transition-colors duration-500",
-        theme === 'light' ? "bg-[#F5F5F7]" : "bg-background"
-      )}>
+        "flex min-h-screen w-full transition-colors duration-500",
+      )} style={{ background: 'var(--background)', fontFamily: 'var(--font-sans)' }}>
         {/* Sidebar Navigation */}
         <SidebarNav currentPage={currentPage} onNavigate={setCurrentPage} />
 
         {/* Main Content Area */}
-        <SidebarInset className={cn(
-          "flex-1 flex flex-col min-h-screen overflow-hidden relative transition-colors duration-500",
-          theme === 'light' ? "bg-[#F5F5F7]" : "bg-background"
-        )}>
-          
-          {/* Top Header / Search Bar */}
-          <header className={cn(
-            "sticky top-0 z-40 w-full transition-all duration-300 border-b",
-            theme === 'light' 
-              ? (isScrolled ? "bg-white/80 backdrop-blur-xl border-black/5" : "bg-white border-black/5") 
-              : (isScrolled ? "bg-background/80 backdrop-blur-xl border-border" : "bg-background border-border"),
-            isScrolled ? "py-3" : "py-4"
-          )}>
-            <div className="container px-6 flex items-center justify-between gap-4 max-w-full">
-              {/* Left Side: Search Bar */}
-              <div className="flex items-center gap-4 flex-1">
-                <div className="relative w-full max-w-[140px] sm:max-w-md group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchAddressInput}
-                    onChange={(e) => setSearchAddressInput(e.target.value)}
-                    onKeyDown={handleSearchBarSubmit}
-                    className="w-full bg-secondary/30 border border-border/50 rounded-xl pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-border/50 transition-all"
-                  />
-                </div>
+        <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-hidden relative transition-colors duration-500" style={{ background: 'var(--background)' }}>
+
+          {/* Header */}
+          <header
+            className={cn(
+              "sticky top-0 z-40 w-full transition-colors duration-150",
+              isScrolled ? "py-2" : "py-3"
+            )}
+            style={{
+              background: 'var(--background)',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <div className="px-4 sm:px-6 flex items-center gap-3 max-w-full">
+
+              {/* Mobile logo */}
+              <div className="lg:hidden flex items-center gap-2 mr-1">
+                <img
+                  src={mounted && theme === 'dark'
+                    ? "https://sodex.com/_next/image?url=%2Flogo%2Flogo.webp&w=256&q=75"
+                    : "https://testnet.sodex.com/assets/SoDEX-Dh5Mk-Pl.svg"}
+                  alt="SoDEX"
+                  className="h-5 w-auto object-contain"
+                />
               </div>
 
-              {/* Right Side: Actions */}
-              <div className="flex items-center gap-3">
-                
+              {/* Search bar */}
+              <div className="relative flex-1 max-w-sm">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5"
+                  style={{ color: 'var(--muted-foreground)' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search wallet..."
+                  value={searchAddressInput}
+                  onChange={(e) => setSearchAddressInput(e.target.value)}
+                  onKeyDown={handleSearchBarSubmit}
+                  className="w-full pl-9 pr-4 py-2 text-sm focus:outline-none transition-colors duration-150"
+                  style={{
+                    background: 'var(--muted)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--foreground)',
+                    fontSize: '13px',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = 'var(--ring)'}
+                  onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                />
+              </div>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                {/* Theme toggle — hidden on mobile (sidebar handles it there) */}
                 {mounted && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
                     onClick={toggleTheme}
-                    className="text-muted-foreground hover:text-white hover:bg-white/5 rounded-xl"
+                    className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200"
+                    style={{ color: 'var(--muted-foreground)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--muted)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
                   >
                     {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                  </Button>
+                  </button>
                 )}
 
-                <a href="https://sodex.com/join/TRADING" target="_blank" rel="noopener noreferrer" className="ml-1 sm:ml-2">
-                  <button className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg border border-border text-foreground text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-secondary/10 transition-all">
+                <a href="https://sodex.com/join/TRADING" target="_blank" rel="noopener noreferrer">
+                  <button
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] font-bold uppercase tracking-widest transition-opacity duration-150"
+                    style={{
+                      background: 'var(--primary)',
+                      color: 'var(--primary-foreground)',
+                      borderRadius: 'var(--radius-sm)',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
                     <span className="hidden sm:inline">Trade</span>
-                    <svg className="w-3.5 h-3.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </button>
                 </a>
-
-                {/* Mobile Navigation Placeholder (moved to root) */}
               </div>
             </div>
           </header>
 
           {/* Page Content */}
-          <main className={cn(
-            "flex-1 overflow-y-auto scroll-smooth p-3 sm:p-4 md:p-6",
-            "lg:max-w-[1600px] lg:mx-auto w-full"
-          )}>
+          <main className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-3 sm:p-4 md:p-6 pb-24 lg:pb-6" style={{ maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
             {/* Conditional Rendering of Tabs */}
             <div className="space-y-8 animate-in fade-in duration-500">
               {currentPage === 'dex-status' && (
-                <Suspense fallback={<div className="w-full h-[60vh] flex items-center justify-center text-muted-foreground">Loading Status...</div>}>
-                  <div className="space-y-8">
-                    {/* Hero Section / Welcome */}
-                    <div className="flex flex-col gap-1">
-                      <div className="lg:hidden flex items-center gap-3 mb-2">
-                        <img 
-                          src={theme === 'dark' 
-                            ? "https://sodex.com/_next/image?url=%2Flogo%2Flogo.webp&w=256&q=75"
-                            : "https://testnet.sodex.com/assets/SoDEX-Dh5Mk-Pl.svg"} 
-                          alt="SoDEX Logo" 
-                          className="h-8 w-auto object-contain" 
-                        />
-                        <span className="text-sm font-bold tracking-tight text-foreground mb-0.5 translate-y-[1px]">Tracker</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 md:gap-6">
-                      {/* Dashboard Stats as Top Summary Cards */}
-                      <DashboardStats variant="compact" />
-                      <TVLCard />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6">
-                      <VolumeChart />
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                      <TodayTopPairs />
-                      <FundFlowChart />
-                    </div>
-
-                    <TopPairsWidget />
-                  </div>
+                <Suspense fallback={<div className="w-full h-[60vh] flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
+                  <DexStatusDashboard onNavigate={setCurrentPage as (page: string) => void} />
                 </Suspense>
               )}
 
@@ -540,18 +542,10 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Mobile Footer (Contact Links) */}
-            <div className="md:hidden mt-12 pb-12 pt-8 border-t border-border/10 flex flex-col items-center gap-6">
-              <div className="flex items-center gap-6">
-                <a href="https://x.com/eliasing__" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/40 hover:text-foreground transition-all hover:scale-110 active:scale-90">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-                <a href="https://t.me/fallphile" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/40 hover:text-foreground transition-all hover:scale-110 active:scale-90">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                </a>
-              </div>
-              <p className="text-[8px] text-muted-foreground/20 text-center max-w-[280px] font-bold uppercase tracking-[0.2em] leading-relaxed">
-                Trading involves significant risk. SoDex tracker is for informational purposes only.
+            {/* Mobile Footer — minimal */}
+            <div className="md:hidden mt-16 pb-28 pt-6 flex flex-col items-center gap-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-center leading-relaxed" style={{ color: 'var(--muted-foreground)', opacity: 0.3, maxWidth: 260 }}>
+                Trading involves significant risk.<br/>SoDex Tracker is for informational purposes only.
               </p>
             </div>
           </main>

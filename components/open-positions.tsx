@@ -20,6 +20,8 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const DEFAULT_ROWS = 7;
 
   useEffect(() => {
     const perpsState = portfolio?.fastAccountState?.perps;
@@ -118,26 +120,30 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
     }).sort((a, b) => String(a.positionId).localeCompare(String(b.positionId)));
   }, [openPositions, openOrders]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(displayPositions.length / rowsPerPage);
+  // Show 7 by default, expand on demand
+  const visiblePositions = showAll ? displayPositions : displayPositions.slice(0, DEFAULT_ROWS);
+  const hasMore = displayPositions.length > DEFAULT_ROWS;
+
+  // Pagination logic (only when expanded)
+  const totalPages = showAll ? Math.ceil(visiblePositions.length / rowsPerPage) : 1;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedPositions = displayPositions.slice(startIndex, endIndex);
+  const paginatedPositions = showAll ? visiblePositions.slice(startIndex, endIndex) : visiblePositions;
 
   const totalMarginInUse = useMemo(() => {
-    return displayPositions.reduce((sum, pos) => sum + pos.margin, 0);
-  }, [displayPositions]);
+    return visiblePositions.reduce((sum, pos) => sum + pos.margin, 0);
+  }, [visiblePositions]);
 
   const openStats = useMemo(() => {
-    const totalUnrealized = displayPositions.reduce((sum, pos) => sum + pos.unrealized, 0);
-    const totalFees = displayPositions.reduce((sum, pos) => sum + pos.fee, 0);
-    const notional = displayPositions.reduce((sum, pos) => sum + Math.abs(pos.size * pos.entry), 0);
-    const longCount = displayPositions.filter((pos) => pos.side === 'LONG').length;
+    const totalUnrealized = visiblePositions.reduce((sum, pos) => sum + pos.unrealized, 0);
+    const totalFees = visiblePositions.reduce((sum, pos) => sum + pos.fee, 0);
+    const notional = visiblePositions.reduce((sum, pos) => sum + Math.abs(pos.size * pos.entry), 0);
+    const longCount = visiblePositions.filter((pos) => pos.side === 'LONG').length;
     const shortCount = displayPositions.length - longCount;
     const avgLeverage = totalMarginInUse > 0 ? notional / totalMarginInUse : 0;
 
     return { totalUnrealized, totalFees, notional, longCount, shortCount, avgLeverage };
-  }, [displayPositions, totalMarginInUse]);
+  }, [visiblePositions, totalMarginInUse]);
 
   const formatCurrency = (value: number, decimals = 2) => {
     const sign = value < 0 ? '-' : '';
@@ -207,210 +213,160 @@ export function OpenPositions({ accountId }: { accountId?: string | null }) {
 
   if (openPositions.length === 0) {
     return (
-      <Card className="rounded-[2rem] border border-black/8 bg-white p-12 text-center text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">No open positions</h3>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/25 dark:text-white/25">All systems clear</p>
-      </Card>
+      <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="px-4 py-3 border-b border-border">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Open Positions</span>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">No open positions</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="overflow-hidden rounded-[2rem] border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-      <div className="border-b border-black/8 p-4 dark:border-white/10 sm:p-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/35 dark:text-white/35">Open positions</h3>
-              <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-green-500">
-                {displayPositions.length} live
-              </span>
-              {isRefreshing && <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-500" />}
-            </div>
-            <p className="mt-1 text-xs leading-4 text-muted-foreground/60">
-              Live perps exposure, margin, liquidation risk, and unrealized PnL.
-            </p>
-          </div>
-
-          {lastUpdateTime && (
-            <span className="shrink-0 text-[9px] font-medium uppercase tracking-[0.16em] text-black/30 dark:text-white/30">
-              Sync {lastUpdateTime}
+    <div className="border border-border bg-card text-foreground overflow-hidden" style={{ borderRadius: 'var(--radius-md)' }}>
+      <div className="border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Open Positions</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-border text-muted-foreground" style={{ borderRadius: 'var(--radius-sm)' }}>
+              {displayPositions.length} live
             </span>
+            {isRefreshing && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground/40" />}
+          </div>
+          {lastUpdateTime && (
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">Sync {lastUpdateTime}</span>
           )}
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
-          {[
-            { label: 'Unrealized', value: `${openStats.totalUnrealized >= 0 ? '+' : ''}${formatCurrency(openStats.totalUnrealized)}`, tone: openStats.totalUnrealized >= 0 ? 'text-green-500' : 'text-red-500' },
-            { label: 'Notional', value: formatCurrency(openStats.notional, 0), tone: 'text-foreground' },
-            { label: 'Margin used', value: formatCurrency(totalMarginInUse), tone: 'text-foreground' },
-            { label: 'Avg lev.', value: `${openStats.avgLeverage.toFixed(1)}x`, tone: 'text-foreground' },
-            { label: 'Long / Short', value: `${openStats.longCount} / ${openStats.shortCount}`, tone: 'text-foreground' },
-            { label: 'Available', value: balanceData ? formatCurrency(parseFloat(balanceData.availableBalance)) : '--', tone: 'text-green-500' },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/35 dark:text-white/35">{stat.label}</p>
-              <p className={`mt-0.5 truncate text-xs font-semibold tracking-[-0.02em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
-            </div>
-          ))}
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 divide-x divide-y divide-border border-b border-border">
+        {[
+          { label: 'Unrealized', value: `${openStats.totalUnrealized >= 0 ? '+' : ''}${formatCurrency(openStats.totalUnrealized)}`, tone: openStats.totalUnrealized >= 0 ? 'text-[var(--success)]' : 'text-destructive' },
+          { label: 'Notional', value: formatCurrency(openStats.notional, 0), tone: 'text-foreground' },
+          { label: 'Margin used', value: formatCurrency(totalMarginInUse), tone: 'text-foreground' },
+          { label: 'Avg lev.', value: `${openStats.avgLeverage.toFixed(1)}x`, tone: 'text-foreground' },
+          { label: 'Long / Short', value: `${openStats.longCount} / ${openStats.shortCount}`, tone: 'text-foreground' },
+          { label: 'Available', value: balanceData ? formatCurrency(parseFloat(balanceData.availableBalance)) : '--', tone: 'text-[var(--success)]' },
+        ].map((stat) => (
+          <div key={stat.label} className="flex flex-col gap-1.5 p-3">
+            <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{stat.label}</p>
+            <p className={`text-sm font-bold tracking-tight ${stat.tone}`}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style dangerouslySetInnerHTML={{ __html: `
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-        `}} />
-        <div className="no-scrollbar overflow-x-auto">
-          <table className="w-full text-[10px] border-separate border-spacing-y-1.5 text-left">
-            <thead>
-              <tr className="text-black/35 dark:text-white/35 font-bold uppercase tracking-[0.18em] text-[9px]">
-                <th className="text-left py-2 px-3">Market</th>
-                <th className="text-left py-2 px-3">Side</th>
-                <th className="text-left py-2 px-3">Mode</th>
-                <th className="text-right py-2 px-3">Size</th>
-                <th className="text-right py-2 px-3">Entry</th>
-                <th className="text-right py-2 px-3">Mark risk</th>
-                <th className="text-right py-2 px-3">Margin</th>
-                <th className="text-right py-2 px-3">Lev.</th>
-                <th className="text-right py-2 px-3">Unrealized</th>
-                <th className="text-right py-2 px-3">TP / SL</th>
-                <th className="text-right py-2 px-3">Fees</th>
-              </tr>
-            </thead>
-          <tbody>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-[10px] text-left">
+          <thead>
+            <tr className="border-b border-border">
+              {['Market','Side','Mode','Size','Entry','Mark risk','Margin','Lev.','Unrealized','TP / SL','Fees'].map((h, i) => (
+                <th key={h} className={`py-2.5 px-3 text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground ${i > 2 ? 'text-right' : ''}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
             {paginatedPositions.map((pos) => {
               const isProfit = pos.unrealized >= 0;
-
               return (
-                <tr key={pos.id} className="group relative rounded-xl bg-black/[0.02] transition-all hover:bg-black/[0.04] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]">
-                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl font-semibold text-foreground">{pos.symbol}</td>
+                <tr key={pos.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="py-3 px-3 font-bold text-foreground">{pos.symbol}</td>
                   <td className="py-3 px-3">
-                    <span className={`rounded-md px-2 py-0.5 text-[9px] font-semibold tracking-[0.18em] ${pos.side === 'LONG' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
-                      {pos.side}
-                    </span>
+                    <span className={`text-[9px] font-bold tracking-widest ${pos.side === 'LONG' ? 'text-[var(--success)]' : 'text-destructive'}`}>{pos.side}</span>
                   </td>
                   <td className="py-3 px-3">
-                    <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
-                      {pos.margin_type}
-                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{pos.margin_type}</span>
                   </td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{formatPrice(pos.entry)}</td>
-                  <td className="py-3 px-3 text-right text-red-400">{formatPrice(pos.liquidation)}</td>
-                  <td className="py-3 px-3 text-right text-black/55 dark:text-white/55">{formatCurrency(pos.margin)}</td>
-                  <td className="py-3 px-3 text-right font-semibold text-foreground">{pos.leverage}x</td>
-                  <td className={`py-3 px-3 text-right font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                  <td className="py-3 px-3 text-right text-muted-foreground">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+                  <td className="py-3 px-3 text-right text-muted-foreground">{formatPrice(pos.entry)}</td>
+                  <td className="py-3 px-3 text-right text-destructive">{formatPrice(pos.liquidation)}</td>
+                  <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(pos.margin)}</td>
+                  <td className="py-3 px-3 text-right font-bold text-foreground">{pos.leverage}x</td>
+                  <td className={`py-3 px-3 text-right font-bold ${isProfit ? 'text-[var(--success)]' : 'text-destructive'}`}>
                     {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
                   </td>
                   <td className="py-3 px-3 text-right">
-                    <span className="text-green-500/80 text-[10px]">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
-                    <span className="mx-1 text-muted-foreground/25 text-[10px]">/</span>
-                    <span className="text-red-500/80 text-[10px]">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
+                    <span className="text-[var(--success)]/70 text-[10px]">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
+                    <span className="mx-1 text-muted-foreground/30">/</span>
+                    <span className="text-destructive/70 text-[10px]">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
                   </td>
-                  <td className="py-3 px-3 first:rounded-l-xl last:rounded-r-xl text-right text-black/55 dark:text-white/55">{formatCurrency(pos.fee)}</td>
+                  <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(pos.fee)}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-        </div>
       </div>
 
       {/* Mobile List */}
-      <div className="md:hidden space-y-3">
+      <div className="md:hidden divide-y divide-border">
         {paginatedPositions.map((pos) => {
           const isProfit = pos.unrealized >= 0;
           return (
-          <div key={pos.id} className="rounded-2xl border border-black/8 bg-black/[0.02] p-4 dark:border-white/10 dark:bg-white/[0.03]">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{pos.symbol}</span>
-                <span className={`rounded px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.18em] ${pos.side === 'LONG' ? 'bg-green-500/12 text-green-400' : 'bg-red-500/12 text-red-400'}`}>
-                  {pos.side}
-                </span>
-                <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/45 dark:bg-white/[0.04] dark:text-white/45">
-                  {pos.margin_type}
-                </span>
-              </div>
-              <span className={`font-semibold text-[13px] ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-y-3 gap-x-2 text-[10px]">
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Entry</span>
-                <span className="text-black/55 dark:text-white/55">{formatPrice(pos.entry)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Mark risk</span>
-                <span className="text-red-400">{formatPrice(pos.liquidation)}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Size</span>
-                <span className="text-black/55 dark:text-white/55">{pos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Margin / Lev.</span>
-                <span className="text-black/55 dark:text-white/55">{formatCurrency(pos.margin)} / {pos.leverage}x</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">TP / SL</span>
-                <span className="text-black/55 dark:text-white/55">
-                  <span className="text-green-500/80">{pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))}</span>
-                  <span className="mx-1 text-muted-foreground/25">/</span>
-                  <span className="text-red-500/80">{pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}</span>
+            <div key={pos.id} className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm text-foreground">{pos.symbol}</span>
+                  <span className={`text-[8px] font-bold tracking-widest ${pos.side === 'LONG' ? 'text-[var(--success)]' : 'text-destructive'}`}>{pos.side}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">{pos.margin_type}</span>
+                </div>
+                <span className={`font-bold text-sm ${isProfit ? 'text-[var(--success)]' : 'text-destructive'}`}>
+                  {isProfit ? '+' : ''}{formatCurrency(pos.unrealized)}
                 </span>
               </div>
-              <div className="flex flex-col">
-                <span className="mb-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/30 dark:text-white/30">Fees</span>
-                <span className="text-black/55 dark:text-white/55">{formatCurrency(pos.fee)}</span>
+              <div className="grid grid-cols-3 gap-y-2.5 gap-x-2">
+                {[['Entry', formatPrice(pos.entry), ''], ['Mark risk', formatPrice(pos.liquidation), 'text-destructive'], ['Size', pos.size.toLocaleString(undefined,{maximumFractionDigits:4}), ''], ['Margin/Lev', `${formatCurrency(pos.margin)} / ${pos.leverage}x`, ''], ['TP/SL', `${pos.tp === 'None' ? '--' : formatPrice(parseFloat(pos.tp))} / ${pos.sl === 'None' ? '--' : formatPrice(parseFloat(pos.sl))}`, ''], ['Fees', formatCurrency(pos.fee), '']].map(([label, val, tone]) => (
+                  <div key={label} className="flex flex-col gap-0.5">
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">{label}</span>
+                    <span className={`text-[11px] font-bold text-muted-foreground ${tone}`}>{val}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2.5 pt-2.5 border-t border-border flex justify-between text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest">
+                <span>Opened</span><span>{pos.createdAt}</span>
               </div>
             </div>
-            
-            <div className="mt-3 flex items-center justify-between border-t border-black/5 pt-2 text-[9px] text-black/35 dark:border-white/5 dark:text-white/35">
-              <span>Opened</span>
-              <span>{pos.createdAt}</span>
-            </div>
-          </div>
           );
         })}
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex flex-col gap-3 border-t border-black/8 p-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            {[10, 25, 50].map((count) => (
-              <button
-                key={count}
-                onClick={() => handleRowsPerPageChange(count)}
-                className={`rounded-lg px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  rowsPerPage === count
-                    ? 'bg-foreground text-background'
-                    : 'bg-black/[0.04] text-muted-foreground hover:text-foreground dark:bg-white/[0.06]'
-                }`}
-              >
-                {count}
+      {/* See All / See Less + Pagination */}
+      <div className="flex flex-col items-center border-t border-border">
+        {hasMore && (
+          <button
+            onClick={() => { setShowAll(!showAll); setCurrentPage(1); }}
+            className="w-full py-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showAll ? 'See Less ↑' : `See All (${displayPositions.length}) ↓`}
+          </button>
+        )}
+        {showAll && totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 w-full px-4 py-3">
+            <div className="flex items-center gap-1">
+              {[10, 25, 50].map((count) => (
+                <button key={count} onClick={() => handleRowsPerPageChange(count)}
+                  className={`px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border transition-colors ${
+                    rowsPerPage === count ? 'border-foreground bg-foreground text-background' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
+                  }`} style={{ borderRadius: 'var(--radius-sm)' }}>
+                  {count}
+                </button>
+              ))}
+            </div>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">Page {currentPage} / {totalPages}</span>
+            <div className="flex gap-1">
+              <button onClick={handlePrevPage} disabled={currentPage === 1} className="p-1.5 border border-border text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-25 transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <ChevronLeft className="h-3.5 w-3.5" />
               </button>
-            ))}
-          </div>
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/50">
-              Page {currentPage} of {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline" size="sm" className="h-8 rounded-xl px-2">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline" size="sm" className="h-8 rounded-xl px-2">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <button onClick={handleNextPage} disabled={currentPage === totalPages} className="p-1.5 border border-border text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-25 transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
-        </div>
-      )}
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
 

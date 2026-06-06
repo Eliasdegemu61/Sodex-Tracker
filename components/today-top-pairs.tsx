@@ -38,7 +38,7 @@ export function TodayTopPairs() {
 
   if (error) {
     return (
-      <Card className="p-6 bg-card border border-destructive/20 rounded-2xl">
+      <Card className="p-6 bg-card border border-destructive/20" style={{ borderRadius: 'var(--radius-md)' }}>
         <h3 className="text-[10px] font-bold text-destructive/60 mb-2 uppercase tracking-wider">Sync Error</h3>
         <p className="text-[10px] text-muted-foreground/30 font-bold uppercase ">{error}</p>
       </Card>
@@ -47,11 +47,11 @@ export function TodayTopPairs() {
 
   if (isLoading || !volumeData) {
     return (
-      <Card className="p-6 bg-background border border-border rounded-lg animate-pulse">
+      <Card className="p-6 bg-background border border-border animate-pulse" style={{ borderRadius: 'var(--radius-md)' }}>
         <div className="h-4 w-32 bg-secondary/20 rounded mb-6" />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map(idx => (
-            <div key={idx} className="h-14 bg-secondary/10 rounded-lg" />
+            <div key={idx} className="h-14 bg-secondary/10" style={{ borderRadius: 'var(--radius-sm)' }} />
           ))}
         </div>
       </Card>
@@ -59,7 +59,7 @@ export function TodayTopPairs() {
   }
 
   return (
-    <Card className="p-6 md:p-8 bg-background border border-border rounded-lg flex flex-col h-full">
+    <Card className="p-6 md:p-8 bg-background border border-border flex flex-col h-full" style={{ borderRadius: 'var(--radius-md)' }}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex flex-col">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Performers</h3>
@@ -87,7 +87,7 @@ export function TodayTopPairs() {
         {currentEntries.length > 0 ? (
           currentEntries.map((entry) => {
             return (
-              <div key={`${entry.pair}-${entry.type}`} className="flex flex-row items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-secondary/5 transition-colors">
+              <div key={`${entry.pair}-${entry.type}`} className="flex flex-row items-center justify-between p-3 border border-border/50 hover:bg-muted transition-colors" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {getTokenLogo(entry.pair) ? (

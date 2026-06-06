@@ -151,115 +151,107 @@ export function MonthlyCalendar() {
   };
 
   return (
-    <Card className="overflow-hidden rounded-xl border border-black/8 bg-white text-foreground shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem]">
+    <div className="border border-border bg-card text-foreground" style={{ borderRadius: 'var(--radius-md)' }}>
       <div className="flex flex-col lg:flex-row">
         {/* Left Side: Header & Stats */}
-        <div className="flex flex-col border-b border-black/8 p-3 dark:border-white/10 sm:p-5 lg:w-1/3 lg:border-b-0 lg:border-r lg:p-6 xl:w-1/4">
+        <div className="flex flex-col border-b border-border p-4 lg:w-1/3 lg:border-b-0 lg:border-r lg:p-5 xl:w-1/4">
           <div className="flex items-start justify-between gap-3 lg:flex-col lg:justify-start">
             <div>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-black/35 dark:text-white/35 sm:text-[10px]">Daily PnL</p>
-              <h3 className="mt-1 select-none text-xl font-semibold tracking-[-0.04em] text-foreground sm:text-2xl lg:text-3xl">
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Daily PnL</p>
+              <h3 className="mt-1 select-none text-lg font-bold tracking-tight text-foreground">
                 {currentDate.toLocaleDateString('en-US', { month: 'long' })} {currentDate.getFullYear()}
               </h3>
             </div>
-
-            <div className="flex w-fit shrink-0 items-center gap-1 rounded-xl border border-black/10 bg-black/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:gap-2">
+            <div className="flex items-center gap-0 border border-border" style={{ borderRadius: 'var(--radius-sm)' }}>
               <button
                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
-                className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Previous month"
               >
-                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ChevronLeft className="h-3.5 w-3.5" />
               </button>
-              <div className="mx-1 h-4 w-px bg-black/10 dark:bg-white/10" />
+              <div className="h-4 w-px bg-border" />
               <button
                 onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
-                className="rounded-lg p-1.5 text-black/55 transition-all hover:bg-black/[0.06] hover:text-black active:scale-90 dark:text-white/55 dark:hover:bg-white/[0.06] dark:hover:text-white sm:rounded-xl sm:p-2"
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Next month"
               >
-                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2 lg:mt-6 lg:grid-cols-2 lg:content-start">
+          <div className="mt-4 grid grid-cols-3 gap-1 lg:grid-cols-2 lg:content-start">
             {[
-              { label: 'Net', value: formatPnL(monthStats.totalPnL), tone: monthStats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500' },
+              { label: 'Net', value: formatPnL(monthStats.totalPnL), tone: monthStats.totalPnL >= 0 ? 'text-[var(--success)]' : 'text-destructive' },
               { label: 'Win rate', value: `${monthStats.winRate.toFixed(0)}%`, tone: 'text-foreground' },
-              { label: 'Active', value: `${monthStats.activeDays} days`, tone: 'text-foreground' },
-              { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-green-500', desktopOnly: false },
-              { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-red-500', desktopOnly: false },
+              { label: 'Active', value: `${monthStats.activeDays}d`, tone: 'text-foreground' },
+              { label: 'Best', value: formatPnL(monthStats.bestDay), tone: 'text-[var(--success)]' },
+              { label: 'Worst', value: formatPnL(monthStats.worstDay), tone: 'text-destructive' },
             ].map((stat) => (
-              <div key={stat.label} className={`rounded-xl border border-black/8 bg-black/[0.025] p-2 dark:border-white/10 dark:bg-white/[0.03] sm:rounded-2xl sm:p-3`}>
-                <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-black/35 dark:text-white/35 sm:text-[8px] sm:tracking-[0.16em]">{stat.label}</p>
-                <p className={`mt-1 truncate text-xs font-semibold tracking-[-0.03em] sm:text-sm ${stat.tone}`}>{stat.value}</p>
+              <div key={stat.label} className="border border-border p-2" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{stat.label}</p>
+                <p className={`mt-1 truncate text-xs font-bold tracking-tight ${stat.tone}`}>{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Right Side: Calendar Grid */}
-        <div className="p-3 sm:p-5 lg:w-2/3 lg:p-6 xl:w-3/4">
-          <div>
-          <div>
-            <div className="mb-1.5 grid grid-cols-7 gap-1 sm:mb-2 sm:gap-2">
-              {weekDays.map((d) => (
-                <div key={d} className="py-1.5 text-center text-[8px] font-semibold uppercase tracking-[0.12em] text-black/35 dark:text-white/35 sm:py-2 sm:text-[9px] sm:tracking-[0.18em]">
-                  <span className="sm:hidden">{d[0]}</span>
-                  <span className="hidden sm:inline">{d}</span>
-                </div>
-              ))}
-            </div>
+        <div className="p-4 lg:w-2/3 xl:w-3/4">
+          <div className="mb-2 grid grid-cols-7 gap-1">
+            {weekDays.map((d) => (
+              <div key={d} className="py-1 text-center text-[8px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="sm:hidden">{d[0]}</span>
+                <span className="hidden sm:inline">{d}</span>
+              </div>
+            ))}
+          </div>
 
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
-              {calendarDays.map((dayObj, idx) => {
-                const { date, isCurrentMonth } = dayObj;
-                const dayTrades = isCurrentMonth ? getDayPnL(date) : null;
-                const hasActivity = !!dayTrades && dayTrades.pnl !== 0;
-                const isPositive = hasActivity && (dayTrades?.pnl ?? 0) > 0;
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((dayObj, idx) => {
+              const { date, isCurrentMonth } = dayObj;
+              const dayTrades = isCurrentMonth ? getDayPnL(date) : null;
+              const hasActivity = !!dayTrades && dayTrades.pnl !== 0;
+              const isPositive = hasActivity && (dayTrades?.pnl ?? 0) > 0;
 
-                const now = new Date();
-                const isToday =
-                  isCurrentMonth &&
-                  date.getDate() === now.getDate() &&
-                  date.getMonth() === now.getMonth() &&
-                  date.getFullYear() === now.getFullYear();
+              const now = new Date();
+              const isToday =
+                isCurrentMonth &&
+                date.getDate() === now.getDate() &&
+                date.getMonth() === now.getMonth() &&
+                date.getFullYear() === now.getFullYear();
 
-                const baseCell =
-                  'relative flex aspect-square flex-col justify-between rounded-lg border p-1.5 transition-all duration-200 sm:aspect-[1.22/1] sm:rounded-2xl sm:p-2.5';
-                const mutedCell = !isCurrentMonth
-                  ? 'border-black/6 bg-black/[0.015] opacity-35 dark:border-white/6 dark:bg-white/[0.015]'
-                  : isToday
-                    ? 'border-orange-500/35 bg-orange-500/8'
-                    : 'border-black/8 bg-black/[0.02] hover:bg-black/[0.045] dark:border-white/8 dark:bg-white/[0.02] dark:hover:bg-white/[0.045]';
-
-                return (
-                  <div
-                    key={idx}
-                    className={`${baseCell} ${hasActivity && isCurrentMonth ? 'shadow-sm' : mutedCell}`}
-                    style={hasActivity && isCurrentMonth && dayTrades ? getDayStyle(dayTrades.pnl) : undefined}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className={`text-sm font-semibold leading-none ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/45'}`}>
-                        {date.getDate()}
-                      </span>
-                      {hasActivity && (
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
-                      )}
-                    </div>
-                    {hasActivity && isCurrentMonth && dayTrades && (
-                      <p className={`hidden truncate text-right text-[9px] font-bold tabular-nums min-[380px]:block sm:text-[10px] ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                        {formatPnL(dayTrades.pnl, Math.abs(dayTrades.pnl) >= 100 ? 0 : 2)}
-                      </p>
+              return (
+                <div
+                  key={idx}
+                  className={[
+                    'relative flex aspect-square flex-col justify-between border p-1 transition-colors sm:aspect-[1.2/1] sm:p-2',
+                    !isCurrentMonth ? 'border-border/30 opacity-25' :
+                    isToday ? 'border-foreground/40 bg-foreground/5' :
+                    'border-border bg-card hover:bg-muted/30',
+                  ].join(' ')}
+                  style={hasActivity && isCurrentMonth && dayTrades ? getDayStyle(dayTrades.pnl) : undefined}
+                >
+                  <div className="flex items-start justify-between">
+                    <span className={`text-[11px] font-bold leading-none ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/40'}`}>
+                      {date.getDate()}
+                    </span>
+                    {hasActivity && (
+                      <span className={`h-1 w-1 shrink-0 rounded-full ${isPositive ? 'bg-[var(--success)]' : 'bg-destructive'}`} />
                     )}
                   </div>
-                );
-              })}
-            </div>
+                  {hasActivity && isCurrentMonth && dayTrades && (
+                    <p className={`hidden truncate text-right text-[8px] font-bold tabular-nums min-[380px]:block ${isPositive ? 'text-[var(--success)]' : 'text-destructive'}`}>
+                      {formatPnL(dayTrades.pnl, Math.abs(dayTrades.pnl) >= 100 ? 0 : 2)}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-      </div>
-    </Card>
+    </div>
   );
 }

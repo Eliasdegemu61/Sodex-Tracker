@@ -42,7 +42,7 @@ export function TVLCard() {
 
   if (isLoading) {
     return (
-      <Card className="p-4 lg:p-5 bg-background border border-border rounded-lg transition-all duration-300 min-h-[104px] animate-pulse">
+      <Card className="p-4 lg:p-5 bg-background border border-border min-h-[104px] animate-pulse" style={{ borderRadius: 'var(--radius-md)' }}>
         <div className="flex flex-col h-full justify-between min-w-0">
           <div className="flex items-center justify-between h-4">
             <div className="h-3 w-20 bg-secondary/10 rounded" />
@@ -61,7 +61,7 @@ export function TVLCard() {
 
   if (error) {
     return (
-      <Card className="p-5 bg-card border border-destructive/20 rounded-2xl">
+      <Card className="p-5 bg-card border border-destructive/20" style={{ borderRadius: 'var(--radius-md)' }}>
         <h3 className="text-[10px] font-bold text-destructive/60 mb-2">Sync Error</h3>
         <p className="text-[10px] text-muted-foreground/30 font-bold uppercase ">TVL connectivity lost</p>
       </Card>
@@ -69,7 +69,7 @@ export function TVLCard() {
   }
 
   return (
-    <Card className="p-4 lg:p-5 bg-background border border-border rounded-lg transition-all duration-300 group h-full flex flex-col justify-between min-h-[104px]">
+    <Card className="p-4 lg:p-5 bg-background border border-border group h-full flex flex-col justify-between min-h-[104px]" style={{ borderRadius: 'var(--radius-md)' }}>
       <div className="flex flex-col h-full justify-between min-w-0">
         <div className="flex items-center justify-between h-4">
           <h3 className="text-[10px] lg:text-xs font-semibold text-muted-foreground/60 whitespace-nowrap text-zinc-500 leading-none">Value Locked</h3>

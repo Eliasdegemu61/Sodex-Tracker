@@ -64,14 +64,14 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
       <>
         {variant === 'compact' ? (
           <>
-            <Card className="p-4 lg:p-5 bg-background border border-border rounded-lg min-h-[104px] animate-pulse" />
-            <Card className="p-4 lg:p-5 bg-background border border-border rounded-lg min-h-[104px] animate-pulse" />
+            <div className="p-4 lg:p-5 bg-card border border-border min-h-[104px] animate-pulse" style={{ borderRadius: 'var(--radius-md)' }} />
+            <div className="p-4 lg:p-5 bg-card border border-border min-h-[104px] animate-pulse" style={{ borderRadius: 'var(--radius-md)' }} />
           </>
         ) : (
-          <div className="space-y-2 mb-4">
-            <Card className="p-3 bg-card/50 border-border h-16" />
-            <Card className="p-3 bg-card/50 border-border h-16" />
-            <Card className="p-3 bg-card/50 border-border h-16" />
+          <div className="space-y-3 mb-4">
+            <div className="p-3 bg-card border border-border h-16 animate-pulse" style={{ borderRadius: 'var(--radius-md)' }} />
+            <div className="p-3 bg-card border border-border h-16 animate-pulse" style={{ borderRadius: 'var(--radius-md)' }} />
+            <div className="p-3 bg-card border border-border h-16 animate-pulse" style={{ borderRadius: 'var(--radius-md)' }} />
           </div>
         )}
       </>
@@ -105,20 +105,20 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
   // Revised User and Volume Cards for Mobile Merger
   const StatsHeader = () => {
     const SharedCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-      <Card className={cn("p-4 lg:p-5 bg-background border border-border rounded-lg group transition-all duration-300 h-full flex flex-col min-h-[104px]", className)}>
+      <div className={cn("bg-card border border-border p-4 lg:p-5 h-full flex flex-col min-h-[104px] text-foreground", className)} style={{ borderRadius: 'var(--radius-md)' }}>
         {children}
-      </Card>
+      </div>
     );
 
     const UserStats = () => (
       <div className="flex-1 flex flex-col h-full min-w-0">
-        <h3 className="text-[10px] lg:text-xs font-semibold text-muted-foreground/60 mb-2 whitespace-nowrap text-zinc-500">Total Users</h3>
-        <div className="text-lg lg:text-xl font-bold tracking-tight text-foreground leading-none mb-1.5 lg:mb-2">
+        <h3 className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 whitespace-nowrap">Total Users</h3>
+        <div className="text-xl lg:text-2xl font-bold tracking-tight text-foreground leading-none mb-1.5 lg:mb-2 font-mono">
           {totalUsers.toLocaleString()}
         </div>
         {userGain > 0 && (
-          <div className="flex items-center text-[11px] font-bold text-emerald-500 w-fit mt-auto">
-            <TrendingUp className="w-3 h-3 mr-1" />
+          <div className="flex items-center text-[11px] font-bold text-[var(--success)] w-fit mt-auto">
+            <TrendingUp className="w-3 h-3 mr-1 text-[var(--success)]" />
             +{userGain.toLocaleString()} <span className="text-[9px] ml-1 opacity-80 font-medium tracking-tight">({userGainPercent.toFixed(2)}%)</span>
           </div>
         )}
@@ -127,16 +127,16 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
 
     const VolumeStats = () => (
       <div className="flex-1 flex flex-col h-full min-w-0">
-        <h3 className="text-[10px] lg:text-xs font-semibold text-muted-foreground/60 mb-2 whitespace-nowrap text-zinc-500">Total Volume</h3>
-        <div className="text-lg lg:text-xl font-bold tracking-tight text-foreground leading-none">${formatNumber(totalVolume)}</div>
+        <h3 className="text-[10px] lg:text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 whitespace-nowrap">Total Volume</h3>
+        <div className="text-xl lg:text-2xl font-bold tracking-tight text-foreground leading-none mb-1.5 lg:mb-2 font-mono">${formatNumber(totalVolume)}</div>
         <div className="hidden lg:flex items-center gap-3 mt-auto pt-2">
           <div className="flex items-center gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-foreground" />
-            <span className="text-[9px] text-muted-foreground font-bold">Spot <span className="text-foreground">${formatNumber(spotVolume)}</span></span>
+            <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
+            <span className="text-[9px] text-muted-foreground font-bold">Spot <span className="text-foreground font-mono">${formatNumber(spotVolume)}</span></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-muted-foreground" />
-            <span className="text-[9px] text-muted-foreground font-bold">Fut <span className="text-foreground">${formatNumber(futuresVolume)}</span></span>
+            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+            <span className="text-[9px] text-muted-foreground font-bold">Fut <span className="text-foreground font-mono">${formatNumber(futuresVolume)}</span></span>
           </div>
         </div>
       </div>
@@ -164,11 +164,11 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
     }
 
     return (
-      <div className="space-y-2 lg:space-y-3 mb-0 lg:mb-4">
+      <div className="space-y-3 mb-0 lg:mb-4">
         {/* Mobile View: Merged Card */}
         <div className="block lg:hidden">
           <SharedCard>
-            <div className="flex items-center justify-between gap-6 divide-x divide-border/10">
+            <div className="flex items-center justify-between gap-6 divide-x divide-border">
               <UserStats />
               <div className="pl-6 flex-1">
                 <VolumeStats />
@@ -196,22 +196,22 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
 
   // Default variant - show all cards
   return (
-    <div className="space-y-1 lg:space-y-3 mb-0 lg:mb-6">
+    <div className="space-y-1 lg:space-y-3 mb-0 lg:mb-6 text-foreground">
       <StatsHeader />
 
       {/* Spot vs Futures Volume */}
-      <Card className="hidden lg:block p-5 bg-background border border-border rounded-lg overflow-hidden transition-all duration-300">
+      <div className="hidden lg:block bg-card border border-border p-5" style={{ borderRadius: 'var(--radius-md)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-muted-foreground/80 dark:text-muted-foreground/60 text-zinc-500 uppercase tracking-wider">Volume Split</h3>
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Volume Split</h3>
           <div className="flex items-center gap-4">
             {(['all', 'spot', 'futures'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveVolumeTab(t)}
-                className={`text-[10px] font-black transition-all uppercase tracking-wider pb-1 ${
+                className={`text-[10px] font-bold transition-all uppercase tracking-wider pb-1 ${
                   activeVolumeTab === t
                     ? 'text-foreground border-b-2 border-foreground'
-                    : 'text-muted-foreground/30 hover:text-muted-foreground border-b-2 border-transparent'
+                    : 'text-muted-foreground/40 hover:text-muted-foreground border-b-2 border-transparent'
                 }`}
               >
                 {t}
@@ -234,8 +234,8 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
                 isAnimationActive={!isMobile}
                 stroke="none"
               >
-                <Cell fill="var(--foreground)" />
-                <Cell fill="hsl(var(--muted-foreground))" />
+                <Cell fill="var(--primary)" />
+                <Cell fill="var(--border-strong)" />
               </Pie>
             </PieChart>
           </ResponsiveContainer>
@@ -243,7 +243,7 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
             <span className="text-[8px] text-muted-foreground/30 font-bold uppercase">
               {activeVolumeTab === 'all' ? 'Futures' : activeVolumeTab}
             </span>
-            <span className="text-xs font-bold text-foreground/80">
+            <span className="text-xs font-bold text-foreground/80 font-mono">
               {activeVolumeTab === 'all' 
                 ? `${((futuresVolume / (totalVolume || 1)) * 100).toFixed(1)}%`
                 : '100%'
@@ -253,23 +253,22 @@ export function DashboardStats({ variant = 'default' }: DashboardStatsProps) {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="p-3 bg-secondary/5 rounded-lg border border-border/50 space-y-1">
+          <div className="p-3 bg-muted border border-border space-y-1" style={{ borderRadius: 'var(--radius-sm)' }}>
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-foreground" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
               <span className="text-[8px] text-muted-foreground font-bold uppercase">Spot</span>
             </div>
-            <p className="text-xs font-bold text-foreground/80">${formatNumber(spotVolume)}</p>
+            <p className="text-xs font-bold text-foreground/80 font-mono">${formatNumber(spotVolume)}</p>
           </div>
-          <div className="p-3 bg-secondary/5 rounded-lg border border-border/50 space-y-1">
+          <div className="p-3 bg-muted border border-border space-y-1" style={{ borderRadius: 'var(--radius-sm)' }}>
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
               <span className="text-[8px] text-muted-foreground font-bold uppercase">Futures</span>
             </div>
-            <p className="text-xs font-bold text-foreground/80">${formatNumber(futuresVolume)}</p>
+            <p className="text-xs font-bold text-foreground/80 font-mono">${formatNumber(futuresVolume)}</p>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
-

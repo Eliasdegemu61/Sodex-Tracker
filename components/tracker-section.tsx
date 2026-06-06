@@ -13,7 +13,6 @@ import { OpenPositions } from './open-positions';
 import { FundFlowTable } from './fund-flow-table';
 import { AssetFlowCard } from './asset-flow-card';
 import { MonthlyCalendar } from './monthly-calendar';
-import { ShareStatsModal } from './share-stats-modal';
 import { PortfolioProvider } from '@/context/portfolio-context';
 import {
   getUserIdByAddress,
@@ -267,108 +266,138 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
         : undefined;
 
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-xl border border-black/8 bg-white p-4 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:rounded-[2rem] md:p-10">
-          <div className="mb-4 text-center sm:text-left md:mb-8">
-            <h2 className="mb-1 text-lg font-bold tracking-tight text-foreground md:text-4xl">Tracker</h2>
-            <p className="text-[10px] font-medium tracking-wider text-muted-foreground/60 md:text-sm">{loadingMessage}</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md border border-border bg-card animate-in fade-in duration-300" style={{ borderRadius: 'var(--radius-md)' }}>
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Tracker</span>
+            <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {isPaused ? 'Paused' : 'Indexing'}
+            </span>
           </div>
-
-          <div className="space-y-5">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchInput}
-                readOnly
-                className="w-full rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3 pr-12 text-xs font-medium text-foreground placeholder:text-black/25 transition-all dark:border-white/10 dark:bg-white/[0.02] dark:placeholder:text-white/25 md:rounded-2xl md:py-4 md:text-sm"
-              />
-              <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-orange-500" />
+          <div className="p-5 space-y-4">
+            {/* Address display */}
+            <div className="flex items-center gap-2 px-3 py-2.5 border border-border bg-muted/30" style={{ borderRadius: 'var(--radius-sm)' }}>
+              <span className="font-mono text-xs text-muted-foreground truncate flex-1">{searchInput}</span>
             </div>
-
+            {/* Progress */}
             <div>
-              <div className="mb-2 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/45">
-                <span>{fetchProgress.count.toLocaleString()} records</span>
-                <span>{isPaused ? 'Paused' : 'Loading'}</span>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{fetchProgress.count.toLocaleString()} records</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{isPaused ? 'Paused' : 'Loading'}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]">
+              <div className="h-0.5 w-full bg-border overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-orange-500 transition-all duration-500"
-                  style={{ width: `${Math.min(100, Math.max(8, (fetchProgress.count / 1000) * 100))}%` }}
+                  className="h-full bg-foreground transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(4, (fetchProgress.count / 1000) * 100))}%` }}
                 />
               </div>
             </div>
-
-            <p className="text-center text-xs leading-5 text-muted-foreground/55">
+            <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
               {loadingSubMessage || 'Loading account stats and the recent 1,000 positions first.'}
             </p>
-
             {isPaused && (
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleAbortAndShow} variant="outline" className="rounded-xl text-[10px] font-bold uppercase tracking-widest">
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  onClick={handleAbortAndShow}
+                  className="py-2.5 text-[10px] font-bold uppercase tracking-widest border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-foreground"
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                >
                   Show Current
-                </Button>
-                <Button onClick={handleContinue} className="rounded-xl bg-orange-500 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-orange-600">
+                </button>
+                <button
+                  onClick={handleContinue}
+                  className="py-2.5 text-[10px] font-bold uppercase tracking-widest bg-foreground text-background transition-opacity hover:opacity-80"
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                >
                   Continue
-                </Button>
+                </button>
               </div>
             )}
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="p-4 rounded-full bg-red-500/10">
-          <X className="h-8 w-8 text-red-500" />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md border border-destructive/30 bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+          <div className="px-5 py-4 border-b border-border">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Tracker — Error</span>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex-shrink-0 w-6 h-6 border border-destructive/30 flex items-center justify-center" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <X className="h-3.5 w-3.5 text-destructive" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-0.5">Search Failed</p>
+                <p className="text-xs text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleClear}
+              className="w-full py-2.5 text-[10px] font-bold uppercase tracking-widest border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              Try Another Address
+            </button>
+          </div>
         </div>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold">Search Failed</h3>
-          <p className="text-sm text-muted-foreground">{error}</p>
-        </div>
-        <Button onClick={handleClear} variant="outline">Try Another Address</Button>
       </div>
     );
   }
 
   if (!activePortfolio) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <Card className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-xl md:rounded-[2rem] border border-black/8 bg-white p-4 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#050505] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-          
-          <div className="mb-4 md:mb-8 text-center sm:text-left">
-            <h2 className="mb-1 text-lg md:text-4xl font-bold tracking-tight text-foreground">Tracker</h2>
-            <p className="text-[10px] md:text-sm font-medium text-muted-foreground/60 tracking-wider">monitor performance and flows for any address</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md animate-in fade-in duration-300">
+          {/* Section label */}
+          <div className="mb-6">
+            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 mb-1">SoDex Tracker</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground" style={{ letterSpacing: '-0.04em' }}>Track Wallet</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground/60">Monitor performance and flows for any address</p>
           </div>
 
-          <div className="space-y-6">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="0x..."
-                value={searchInput}
-                onChange={(e) => { setSearchInput(e.target.value); setError(null); }}
-                onKeyPress={handleKeyPress}
-                className="w-full rounded-xl md:rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-3 md:py-4 text-xs md:text-sm font-medium text-foreground placeholder:text-black/25 focus:outline-none focus:ring-1 focus:ring-black/15 transition-all disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.02] dark:placeholder:text-white/25 dark:focus:ring-white/25"
-              />
+          {/* Input card */}
+          <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Search className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Paste wallet address…"
+                  value={searchInput}
+                  onChange={(e) => { setSearchInput(e.target.value); setError(null); }}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/30 font-mono focus:outline-none"
+                />
+                {searchInput && (
+                  <button onClick={() => setSearchInput('')}>
+                    <X className="h-3.5 w-3.5 text-muted-foreground/40 hover:text-foreground transition-colors" />
+                  </button>
+                )}
+              </div>
             </div>
-
-            <button
-              onClick={() => handleSearch()}
-              disabled={isLoading || !searchInput.trim()}
-              className="flex w-full items-center justify-center gap-2 rounded-xl md:rounded-2xl border border-white bg-white py-3 md:py-4 text-xs md:text-sm font-bold text-black shadow-sm transition-all hover:bg-white/90 disabled:opacity-40 tracking-widest"
-            >
-              <Search className="w-4 h-4" />
-              <span>Track Wallet</span>
-            </button>
-
-            <p className="text-[10px] text-center text-muted-foreground/40 uppercase tracking-[0.2em]">
-              Loads the fast snapshot first, then recent history
-            </p>
+            <div className="p-3">
+              <button
+                onClick={() => handleSearch()}
+                disabled={isLoading || !searchInput.trim()}
+                className="w-full py-3 text-[11px] font-bold uppercase tracking-[0.2em] bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-25"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                Search
+              </button>
+            </div>
           </div>
-        </Card>
+
+          <p className="mt-4 text-center text-[9px] text-muted-foreground/30 uppercase tracking-[0.2em]">
+            Loads fast snapshot first, then full history
+          </p>
+        </div>
       </div>
     );
   }
@@ -384,46 +413,55 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
       initialIsHistoryLoading={activePortfolio.isHistoryLoading}
       initialHistoryCursor={activePortfolio.nextCursor}
     >
-      <div className="space-y-3 md:space-y-5">
-        <div className="rounded-xl border border-black/8 bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:px-7 md:py-5 md:rounded-[2rem]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold tracking-[-0.04em] md:text-3xl">Tracker</h2>
-                <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-green-500">
-                  Live
+      <div className="space-y-2 md:space-y-2">
+        {/* ── Header bar ── */}
+        <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-3">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Tracker</span>
+              <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-border text-muted-foreground" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-40" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
                 </span>
-              </div>
-              <p className="mt-1 break-all font-mono text-xs text-muted-foreground/60">{activePortfolio.walletAddress}</p>
+                Live
+              </span>
               {activePortfolio.isHistoryLoading && (
-                <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/45">
-                  Loading full history in the background
-                </p>
+                <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                  Indexing history
+                </span>
               )}
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleClear}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                <X className="h-3 w-3" /> Clear
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={handleClear} variant="outline" size="sm" className="rounded-xl">
-              <X className="h-4 w-4 mr-2" /> Clear
-            </Button>
-            <ShareStatsModal walletAddress={activePortfolio.walletAddress} userId={activePortfolio.userId} />
+          <div className="px-4 py-2.5">
+            <p className="font-mono text-[11px] text-muted-foreground/60 break-all">{activePortfolio.walletAddress}</p>
           </div>
         </div>
+
+        {/* PnL Chart — hero, full width */}
+        <div className="w-full">
+          <PnLChart />
         </div>
 
         <PortfolioOverview />
-        
-        <div className="flex flex-col gap-3 md:gap-5">
-          <div className="w-full h-[350px] md:h-[450px]">
-            <PnLChart />
-          </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <MonthlyCalendar />
+          <OpenPositions />
         </div>
 
-        <OpenPositions />
         <PositionsTable />
-        <div className="grid grid-cols-1 gap-3 md:gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <AssetFlowCard walletAddress={activePortfolio.walletAddress} />
           <FundFlowTable walletAddress={activePortfolio.walletAddress} />
         </div>

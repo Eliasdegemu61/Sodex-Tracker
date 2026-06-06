@@ -23,11 +23,11 @@ export function TopPairsWidget() {
 
   if (isLoading || !volumeData) {
     return (
-      <Card className="p-8 bg-background border border-border rounded-lg animate-pulse">
+      <Card className="p-8 bg-background border border-border animate-pulse" style={{ borderRadius: 'var(--radius-md)' }}>
         <div className="h-4 w-32 bg-secondary/20 rounded mb-6" />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-secondary/10 rounded-lg" />
+            <div key={i} className="h-10 bg-secondary/10" style={{ borderRadius: 'var(--radius-sm)' }} />
           ))}
         </div>
       </Card>
@@ -52,7 +52,7 @@ export function TopPairsWidget() {
   const maxVolume = Math.max(...currentItems.map(i => i.volume))
 
   return (
-    <Card className="p-6 md:p-8 bg-background border border-border rounded-lg flex flex-col">
+    <Card className="p-6 md:p-8 bg-background border border-border flex flex-col" style={{ borderRadius: 'var(--radius-md)' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -92,10 +92,10 @@ export function TopPairsWidget() {
           const percentage = (item.volume / maxVolume) * 100
           const opacity = 1 - index * 0.15
           return (
-            <div key={item.pair} className="relative overflow-hidden rounded-lg group">
+            <div key={item.pair} className="relative overflow-hidden group">
               {/* Background fill bar */}
               <div
-                className="absolute inset-y-0 left-0 rounded-lg transition-all duration-1000 ease-out"
+                className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out"
                 style={{ width: `${percentage}%`, backgroundColor: `hsl(var(--foreground) / ${opacity * 0.08})` }}
               />
               {/* Content */}
