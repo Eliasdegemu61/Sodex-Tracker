@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import type { CachedVolumeData, ChartDataPoint } from '@/lib/volume-service'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -100,7 +98,7 @@ export function VolumeChartClient({ data, chartData }: VolumeChartClientProps) {
   }, [])
 
   return (
-    <Card className="p-4 lg:p-8 bg-background border border-border flex flex-col" style={{ borderRadius: 'var(--radius-md)' }}>
+    <div className="p-4 lg:p-8 bg-background border border-border flex flex-col" style={{ borderRadius: 'var(--radius-md)' }}>
       <div className="flex items-center justify-between mb-4 lg:mb-8">
         <h3 className="text-xs font-semibold text-muted-foreground/80 dark:text-muted-foreground/60">volume trend</h3>
         <div className="flex items-center gap-3">
@@ -143,20 +141,20 @@ export function VolumeChartClient({ data, chartData }: VolumeChartClientProps) {
           <AreaChart data={processedChartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorSpot" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="currentColor" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorFutures" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="currentColor" stopOpacity={0.08} />
-                <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                <stop offset="5%" stopColor="#fb923c" stopOpacity={0.12} />
+                <stop offset="95%" stopColor="#fb923c" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorDailyTotal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="currentColor" stopOpacity={0.05} />
-                <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                <stop offset="5%" stopColor="#fdba74" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#fdba74" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorCumulative" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="currentColor" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.05} />
@@ -197,7 +195,7 @@ export function VolumeChartClient({ data, chartData }: VolumeChartClientProps) {
                   return (
                     <div className="bg-card border border-border p-4 min-w-[140px]" style={{ borderRadius: 'var(--radius-sm)' }}>
                       <p className="text-[9px] text-muted-foreground/40 font-bold mb-3">
-                        {label} {isIncomplete && <span className="text-orange-500 ml-1">(Incomplete Date)</span>}
+                        {label} {isIncomplete && <span className="ml-1" style={{ color: '#f97316' }}>(Incomplete Date)</span>}
                       </p>
                       <div className="space-y-2">
                         {uniquePayload.map((entry: any, index: number) => (
@@ -224,17 +222,17 @@ export function VolumeChartClient({ data, chartData }: VolumeChartClientProps) {
             />
             {chartType === 'split' ? (
               <>
-                <Area type="monotone" dataKey="spot" stroke="var(--foreground)" fill="url(#colorSpot)" strokeWidth={1.5} isAnimationActive={!isMobile} animationDuration={1500} name="Spot" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--foreground)' }} />
-                <Area type="monotone" dataKey="spot_incomplete" stroke="var(--foreground)" strokeDasharray="4 4" fill="url(#colorSpot)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={!isMobile} animationDuration={1500} name="Spot" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--foreground)' }} />
-                <Area type="monotone" dataKey="futures" stroke="var(--muted-foreground)" fill="url(#colorFutures)" strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Futures" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--muted-foreground)' }} />
-                <Area type="monotone" dataKey="futures_incomplete" stroke="var(--muted-foreground)" strokeDasharray="4 4" fill="url(#colorFutures)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Futures" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--muted-foreground)' }} />
-                <Area type="monotone" dataKey="daily_total" stroke="var(--border-strong)" fill="url(#colorDailyTotal)" strokeWidth={1} isAnimationActive={!isMobile} animationDuration={1500} name="Daily Total" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--border-strong)' }} />
-                <Area type="monotone" dataKey="daily_total_incomplete" stroke="var(--border-strong)" strokeDasharray="4 4" fill="url(#colorDailyTotal)" fillOpacity={0.3} strokeWidth={1} isAnimationActive={!isMobile} animationDuration={1500} name="Daily Total" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--border-strong)' }} />
+                <Area type="monotone" dataKey="spot" stroke="#f97316" fill="url(#colorSpot)" strokeWidth={1.5} isAnimationActive={!isMobile} animationDuration={1500} name="Spot" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#f97316' }} />
+                <Area type="monotone" dataKey="spot_incomplete" stroke="#f97316" strokeDasharray="4 4" fill="url(#colorSpot)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={!isMobile} animationDuration={1500} name="Spot" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#f97316' }} />
+                <Area type="monotone" dataKey="futures" stroke="#fb923c" fill="url(#colorFutures)" strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Futures" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#fb923c' }} />
+                <Area type="monotone" dataKey="futures_incomplete" stroke="#fb923c" strokeDasharray="4 4" fill="url(#colorFutures)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Futures" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#fb923c' }} />
+                <Area type="monotone" dataKey="daily_total" stroke="#fdba74" fill="url(#colorDailyTotal)" strokeWidth={1} isAnimationActive={!isMobile} animationDuration={1500} name="Daily Total" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#fdba74' }} />
+                <Area type="monotone" dataKey="daily_total_incomplete" stroke="#fdba74" strokeDasharray="4 4" fill="url(#colorDailyTotal)" fillOpacity={0.3} strokeWidth={1} isAnimationActive={!isMobile} animationDuration={1500} name="Daily Total" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#fdba74' }} />
               </>
             ) : (
               <>
-                <Area type="monotone" dataKey="cumulative" stroke="var(--foreground)" fill="url(#colorCumulative)" strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Cumulative Vol" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--foreground)' }} />
-                <Area type="monotone" dataKey="cumulative_incomplete" stroke="var(--foreground)" strokeDasharray="4 4" fill="url(#colorCumulative)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Cumulative Vol" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: 'var(--foreground)' }} />
+                <Area type="monotone" dataKey="cumulative" stroke="#f97316" fill="url(#colorCumulative)" strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Cumulative Vol" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#f97316' }} />
+                <Area type="monotone" dataKey="cumulative_incomplete" stroke="#f97316" strokeDasharray="4 4" fill="url(#colorCumulative)" fillOpacity={0.3} strokeWidth={1.5} isAnimationActive={true} animationDuration={1500} name="Cumulative Vol" dot={false} activeDot={{ r: 3, strokeWidth: 0, fill: '#f97316' }} />
               </>
             )}
           </AreaChart>
@@ -246,28 +244,28 @@ export function VolumeChartClient({ data, chartData }: VolumeChartClientProps) {
           {chartType === 'split' ? (
             <>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-0.5 bg-foreground" />
+                <div className="w-2 h-0.5" style={{ backgroundColor: '#f97316' }} />
                 <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">spot</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-0.5 bg-muted-foreground" />
+                <div className="w-2 h-0.5" style={{ backgroundColor: '#fb923c' }} />
                 <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">futures</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-0.5 bg-border-strong" />
+                <div className="w-2 h-0.5" style={{ backgroundColor: '#fdba74' }} />
                 <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">daily total</span>
               </div>
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-0.5 bg-foreground" />
+              <div className="w-2 h-0.5" style={{ backgroundColor: '#f97316' }} />
               <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">cumulative</span>
             </div>
           )}
         </div>
         <span className="text-[8px] text-muted-foreground/40 font-mono">{chartType === 'total' ? 'B USD' : 'M USD'}</span>
       </div>
-    </Card>
+    </div>
   )
 }
 

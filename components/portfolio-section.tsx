@@ -54,7 +54,7 @@ export function PortfolioSection() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
         <div className="w-full max-w-md border border-destructive/30 bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="px-5 py-4 border-b border-border">
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Portfolio — Sync Failed</span>

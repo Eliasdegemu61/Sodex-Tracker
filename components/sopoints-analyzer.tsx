@@ -1,13 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Loader2, Calendar as CalendarIcon, Search, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, Search, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { formatNumber } from '@/lib/format-number';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -37,6 +34,7 @@ export function SopointsAnalyzer() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const validateDateRange = (start: string, end: string): boolean => {
     const startD = new Date(start);
@@ -183,32 +181,39 @@ export function SopointsAnalyzer() {
     setExpandedRow(expandedRow === address ? null : address);
   };
 
+  const handleCopyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+    setTimeout(() => setCopiedAddress(null), 2000);
+  };
+
   return (
-    <div className="space-y-6 pb-16 animate-in fade-in duration-500">
+    <div className="space-y-0 pb-16 animate-in fade-in duration-500">
 
       {/* Page Header */}
       <div className="pb-6 border-b border-border">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Reverse Search</h1>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">Volume analysis · Max 7-day window</p>
+        <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 mb-1">SoDex Tracker</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" style={{ letterSpacing: '-0.04em' }}>Reverse Search</h1>
+        <p className="mt-1 text-sm text-muted-foreground/60">Volume analysis · Max 7-day window</p>
       </div>
 
-      {/* Controls Card */}
-      <Card className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      {/* Controls */}
+      <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-5" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Start Date */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Start Date</label>
+            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">Start Date</label>
             <Popover>
               <PopoverTrigger asChild>
                 <button className={cn(
-                  "w-full flex items-center gap-3 h-10 px-3 rounded-lg border text-left transition-all text-sm",
-                  startDate ? "border-border bg-secondary/5 text-foreground" : "border-border/50 text-muted-foreground hover:border-border"
-                )}>
-                  <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium">{startDate ? formatDate(startDate) : 'Select date'}</span>
+                  "w-full flex items-center gap-2 h-10 px-3 border text-left transition-all text-sm",
+                  startDate ? "border-border bg-muted/20 text-foreground" : "border-border text-muted-foreground hover:border-foreground/30"
+                )} style={{ borderRadius: 'var(--radius-sm)' }}>
+                  <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+                  <span className="font-medium text-xs">{startDate ? formatDate(startDate) : 'Select date'}</span>
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 border border-border bg-background shadow-xl rounded-xl">
+              <PopoverContent className="w-auto p-0 border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
                 <Calendar
                   mode="single"
                   selected={startDate ? new Date(startDate + 'T00:00:00') : undefined}
@@ -222,18 +227,18 @@ export function SopointsAnalyzer() {
 
           {/* End Date */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">End Date</label>
+            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">End Date</label>
             <Popover>
               <PopoverTrigger asChild>
                 <button className={cn(
-                  "w-full flex items-center gap-3 h-10 px-3 rounded-lg border text-left transition-all text-sm",
-                  endDate ? "border-border bg-secondary/5 text-foreground" : "border-border/50 text-muted-foreground hover:border-border"
-                )}>
-                  <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium">{endDate ? formatDate(endDate) : 'Select date'}</span>
+                  "w-full flex items-center gap-2 h-10 px-3 border text-left transition-all text-sm",
+                  endDate ? "border-border bg-muted/20 text-foreground" : "border-border text-muted-foreground hover:border-foreground/30"
+                )} style={{ borderRadius: 'var(--radius-sm)' }}>
+                  <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+                  <span className="font-medium text-xs">{endDate ? formatDate(endDate) : 'Select date'}</span>
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 border border-border bg-background shadow-xl rounded-xl">
+              <PopoverContent className="w-auto p-0 border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
                 <Calendar
                   mode="single"
                   selected={endDate ? new Date(endDate + 'T00:00:00') : undefined}
@@ -247,13 +252,14 @@ export function SopointsAnalyzer() {
         </div>
 
         {error && (
-          <p className="text-xs font-bold text-red-500 mb-4">{error}</p>
+          <p className="text-[10px] font-bold text-destructive">{error}</p>
         )}
 
         <button
           onClick={handleAnalyze}
           disabled={isLoading || !startDate || !endDate}
-          className="w-full h-11 bg-foreground text-background rounded-lg font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-foreground/90 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+          className="w-full h-10 bg-foreground text-background font-bold text-[11px] uppercase tracking-[0.2em] hover:opacity-80 transition-opacity disabled:opacity-25 flex items-center justify-center gap-2"
+          style={{ borderRadius: 'var(--radius-sm)' }}
         >
           {isLoading ? (
             <>
@@ -264,44 +270,45 @@ export function SopointsAnalyzer() {
         </button>
 
         {isLoading && (
-          <p className="text-[10px] text-muted-foreground text-center mt-4 uppercase tracking-widest animate-pulse">
+          <p className="text-[10px] text-muted-foreground/50 text-center uppercase tracking-widest animate-pulse">
             Fetching data across all dates… this may take a moment
           </p>
         )}
-      </Card>
+      </div>
 
       {/* Results */}
       {results.length > 0 && (
-        <Card className="bg-background border border-border rounded-xl shadow-none overflow-hidden">
+        <div className="mt-6 border border-border bg-card shadow-none overflow-hidden" style={{ borderRadius: 'var(--radius-md)' }}>
 
           {/* Results Header */}
-          <div className="px-6 py-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="px-5 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-sm font-bold text-foreground tracking-tight">Results</h2>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{filteredResults.length.toLocaleString()} addresses</p>
+              <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">{filteredResults.length.toLocaleString()} addresses</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Search address..."
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="h-9 pl-9 pr-8 w-52 bg-secondary/5 border border-border rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-border/80 transition-all"
+                  className="h-9 pl-9 pr-8 w-44 border border-border bg-muted/20 text-xs font-mono text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground/30 transition-all"
+                  style={{ borderRadius: 'var(--radius-sm)' }}
                 />
                 {searchQuery && (
                   <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className="absolute right-2 top-1/2 -translate-y-1/2">
-                    <X className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
+                    <X className="w-3.5 h-3.5 text-muted-foreground/40 hover:text-foreground" />
                   </button>
                 )}
               </div>
 
               {/* Sort */}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-                <SelectTrigger className="h-9 w-36 text-xs border-border bg-secondary/5 rounded-lg">
+                <SelectTrigger className="h-9 w-32 text-xs border-border bg-transparent" style={{ borderRadius: 'var(--radius-sm)' }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -315,9 +322,9 @@ export function SopointsAnalyzer() {
 
           {/* Data Notice */}
           {(!analysisState.hasFuturesData || !analysisState.hasSpotData) && (
-            <div className="px-6 py-3 border-b border-border bg-secondary/5">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                {!analysisState.hasFuturesData ? '⚡ Spot data only for this range' : '⚡ Futures data only for this range'}
+            <div className="px-5 py-2.5 border-b border-border bg-muted/10">
+              <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+                {!analysisState.hasFuturesData ? 'Spot data only for this range' : 'Futures data only for this range'}
               </p>
             </div>
           )}
@@ -326,24 +333,24 @@ export function SopointsAnalyzer() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-border/50">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 w-12">#</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Address</th>
+                <tr className="border-b border-border">
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 w-10">#</th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40">Address</th>
                   {analysisState.hasFuturesData && (
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 text-right hidden sm:table-cell">Futures</th>
+                    <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 text-right hidden sm:table-cell">Futures</th>
                   )}
                   {analysisState.hasSpotData && (
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 text-right hidden sm:table-cell">Spot</th>
+                    <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 text-right hidden sm:table-cell">Spot</th>
                   )}
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 text-right hidden sm:table-cell">Total Vol</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 text-right hidden sm:table-cell">Est. SO Points</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 text-right sm:hidden w-10"></th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 text-right hidden sm:table-cell">Total Vol</th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 text-right hidden sm:table-cell">Est. SO</th>
+                  <th className="px-5 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 text-right sm:hidden w-10"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/30">
+              <tbody className="divide-y divide-border/40">
                 {searchQuery && filteredResults.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-xs text-muted-foreground">
+                    <td colSpan={6} className="px-5 py-12 text-center text-xs text-muted-foreground/40">
                       No results for "{searchQuery}"
                     </td>
                   </tr>
@@ -352,73 +359,87 @@ export function SopointsAnalyzer() {
                   const weightedVol = user.futuresVolGained + user.spotVolGained * 2;
                   const estimatedSoPoints = totalWeightedVolume > 0 ? (weightedVol / totalWeightedVolume) * 1_000_000 : 0;
                   const isExpanded = expandedRow === user.address;
+                  const justCopied = copiedAddress === user.address;
 
                   return (
                     <React.Fragment key={user.address}>
                       <tr 
                         onClick={() => toggleRow(user.address)}
                         className={cn(
-                          "group hover:bg-secondary/5 transition-colors duration-200 cursor-pointer sm:cursor-default",
-                          isExpanded && "bg-secondary/5"
+                          "group hover:bg-muted/10 transition-colors duration-150 cursor-pointer sm:cursor-default",
+                          isExpanded && "bg-muted/10"
                         )}
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-5 py-3">
                           <span className={cn(
-                            "text-[11px] sm:text-xs font-bold tabular-nums",
-                            rank === 1 ? "text-foreground" : rank <= 3 ? "text-foreground/70" : "text-muted-foreground/30"
+                            "text-[10px] font-bold tabular-nums",
+                            rank === 1 ? "text-foreground" : rank <= 3 ? "text-foreground/60" : "text-muted-foreground/30"
                           )}>
                             {rank}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="text-[11px] sm:text-xs font-mono text-muted-foreground/70 truncate max-w-[180px] sm:max-w-xs block group-hover:text-foreground transition-colors">
-                            {user.address}
-                          </span>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] sm:text-xs font-mono text-muted-foreground/60 truncate max-w-[160px] sm:max-w-xs block group-hover:text-foreground transition-colors">
+                              {user.address}
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleCopyAddress(user.address); }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Copy address"
+                            >
+                              {justCopied ? (
+                                <Check className="w-3 h-3 text-[var(--success)]" />
+                              ) : (
+                                <Copy className="w-3 h-3 text-muted-foreground/40 hover:text-foreground" />
+                              )}
+                            </button>
+                          </div>
                         </td>
                         {analysisState.hasFuturesData && (
-                          <td className="px-6 py-4 text-[11px] sm:text-xs font-semibold text-foreground/60 text-right tabular-nums hidden sm:table-cell">
+                          <td className="px-5 py-3 text-[10px] sm:text-xs text-muted-foreground/60 text-right tabular-nums hidden sm:table-cell">
                             {formatNumber(user.futuresVolGained)}
                           </td>
                         )}
                         {analysisState.hasSpotData && (
-                          <td className="px-6 py-4 text-[11px] sm:text-xs font-semibold text-foreground/60 text-right tabular-nums hidden sm:table-cell">
+                          <td className="px-5 py-3 text-[10px] sm:text-xs text-muted-foreground/60 text-right tabular-nums hidden sm:table-cell">
                             {formatNumber(user.spotVolGained)}
                           </td>
                         )}
-                        <td className="px-6 py-4 text-[11px] sm:text-xs font-bold text-foreground text-right tabular-nums hidden sm:table-cell">
+                        <td className="px-5 py-3 text-[10px] sm:text-xs font-bold text-foreground text-right tabular-nums hidden sm:table-cell">
                           {formatNumber(user.totalVolGained)}
                         </td>
-                        <td className="px-6 py-4 text-[11px] sm:text-xs font-bold text-foreground/50 text-right tabular-nums hidden sm:table-cell">
+                        <td className="px-5 py-3 text-[10px] sm:text-xs text-muted-foreground/50 text-right tabular-nums hidden sm:table-cell">
                           {formatNumber(estimatedSoPoints)}
                         </td>
-                        <td className="px-6 py-4 text-right sm:hidden">
-                          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                        <td className="px-5 py-3 text-right sm:hidden">
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground/40" /> : <ChevronDown className="w-4 h-4 text-muted-foreground/40" />}
                         </td>
                       </tr>
                       {/* Mobile Expanded View */}
                       {isExpanded && (
-                        <tr className="sm:hidden bg-secondary/5 animate-in slide-in-from-top-1 duration-200">
-                          <td colSpan={3} className="px-6 py-4">
+                        <tr className="sm:hidden bg-muted/10 animate-in slide-in-from-top-1 duration-200">
+                          <td colSpan={3} className="px-5 py-4">
                             <div className="grid grid-cols-2 gap-4 pb-2">
                               {analysisState.hasFuturesData && (
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Futures Vol</p>
+                                  <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">Futures Vol</p>
                                   <p className="text-xs font-bold text-foreground tabular-nums">{formatNumber(user.futuresVolGained)}</p>
                                 </div>
                               )}
                               {analysisState.hasSpotData && (
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Spot Vol</p>
+                                  <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">Spot Vol</p>
                                   <p className="text-xs font-bold text-foreground tabular-nums">{formatNumber(user.spotVolGained)}</p>
                                 </div>
                               )}
                               <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Total Vol</p>
-                                <p className="text-xs font-bold text-primary tabular-nums">{formatNumber(user.totalVolGained)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">Total Vol</p>
+                                <p className="text-xs font-bold text-foreground tabular-nums">{formatNumber(user.totalVolGained)}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">Est. SO Points</p>
-                                <p className="text-xs font-bold text-foreground/50 tabular-nums">{formatNumber(estimatedSoPoints)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">Est. SO</p>
+                                <p className="text-xs font-bold text-muted-foreground/60 tabular-nums">{formatNumber(estimatedSoPoints)}</p>
                               </div>
                             </div>
                           </td>
@@ -432,11 +453,11 @@ export function SopointsAnalyzer() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-4">
+          <div className="px-5 py-3 border-t border-border flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rows</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Rows</span>
               <Select value={rowsPerPage.toString()} onValueChange={(v) => { setRowsPerPage(parseInt(v)); setCurrentPage(1); }}>
-                <SelectTrigger className="h-7 w-16 text-xs border-border bg-transparent rounded-md">
+                <SelectTrigger className="h-7 w-16 text-xs border-border bg-transparent" style={{ borderRadius: 'var(--radius-sm)' }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -448,7 +469,7 @@ export function SopointsAnalyzer() {
               </Select>
             </div>
 
-            <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+            <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">
               {filteredResults.length === 0 ? 'No results' : `${startIdx + 1}–${Math.min(startIdx + rowsPerPage, filteredResults.length)} of ${filteredResults.length}`}
             </span>
 
@@ -456,7 +477,8 @@ export function SopointsAnalyzer() {
               <button
                 onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="h-7 w-7 flex items-center justify-center border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
@@ -466,7 +488,8 @@ export function SopointsAnalyzer() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                 disabled={currentPage >= totalPages}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="h-7 w-7 flex items-center justify-center border border-border text-muted-foreground hover:text-foreground hover:bg-muted/20 disabled:opacity-25 disabled:cursor-not-allowed transition-all"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
@@ -474,12 +497,12 @@ export function SopointsAnalyzer() {
           </div>
 
           {/* Disclaimer */}
-          <div className="px-6 py-3 border-t border-border/30">
+          <div className="px-5 py-2.5 border-t border-border/30">
             <p className="text-[9px] text-muted-foreground/30 uppercase tracking-widest font-medium">
               Est. SO Points is calculated from volume proportion — for estimation only, not official.
             </p>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );

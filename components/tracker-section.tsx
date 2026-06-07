@@ -266,7 +266,7 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
         : undefined;
 
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-8">
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
         <div className="w-full max-w-md border border-border bg-card animate-in fade-in duration-300" style={{ borderRadius: 'var(--radius-md)' }}>
           {/* Top bar */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -323,7 +323,7 @@ function TrackerContent({ initialSearchAddress }: { initialSearchAddress?: strin
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
         <div className="w-full max-w-md border border-destructive/30 bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="px-5 py-4 border-b border-border">
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Tracker — Error</span>

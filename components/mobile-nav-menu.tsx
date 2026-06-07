@@ -15,6 +15,8 @@ import {
   CandlestickChart,
   MoreHorizontal,
   X,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/app/providers';
@@ -46,7 +48,7 @@ const allNav = [
 ];
 
 export function MobileNavMenu({ currentPage, onNavigate }: MobileNavMenuProps) {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [moreOpen, setMoreOpen] = useState(false);
 
   const isPrimary = primaryNav.some(i => i.id === currentPage);
@@ -88,13 +90,23 @@ export function MobileNavMenu({ currentPage, onNavigate }: MobileNavMenuProps) {
           >
             All Pages
           </span>
-          <button
-            onClick={() => setMoreOpen(false)}
-            className="w-6 h-6 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
-          >
-            <X className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="w-6 h-6 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
+              title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+            >
+              {theme === 'dark' ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
+            </button>
+            <button
+              onClick={() => setMoreOpen(false)}
+              className="w-6 h-6 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {allNav.map((item) => {

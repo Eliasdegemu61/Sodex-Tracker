@@ -104,9 +104,11 @@ function AccruedFundingContent({ userId, walletAddress, onClear }: { userId: str
 
   if (isLoading && positions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[40vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/20 mb-4" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Syncing Engine...</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
+        <div className="flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/20 mb-4" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Syncing Engine...</p>
+        </div>
       </div>
     );
   }
@@ -371,53 +373,76 @@ export function AccruedFunding({ initialSearchAddress }: { initialSearchAddress?
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/10 mb-4" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Resolving Identity...</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
+        <div className="flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/10 mb-4" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Resolving Identity...</p>
+        </div>
       </div>
     );
   }
 
   if (!userId || !walletAddress) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-8">
-        <div className="w-full max-w-lg border border-border bg-card p-6 md:p-10" style={{ borderRadius: 'var(--radius-md)' }}>
-          <div className="mb-6 md:mb-8 space-y-1">
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tighter text-foreground">Funding</h2>
-            <p className="text-[10px] md:text-sm font-medium text-muted-foreground/40 tracking-wider">inspect real-time funding for any address</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md animate-in fade-in duration-300">
+
+          <div className="mb-6">
+            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 mb-1">SoDex Tracker</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground" style={{ letterSpacing: '-0.04em' }}>Funding</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground/60">Inspect real-time funding for any address</p>
           </div>
 
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="0x..."
-                className="w-full h-11 md:h-14 border border-border bg-transparent pl-10 pr-4 text-xs md:text-sm font-medium text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground transition-all"
-                style={{ borderRadius: 'var(--radius-sm)' }}
-              />
+          <div className="border border-border bg-card" style={{ borderRadius: 'var(--radius-md)' }}>
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Search className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Paste wallet address…"
+                  value={searchInput}
+                  onChange={(e) => { setSearchInput(e.target.value); setError(null); }}
+                  onKeyDown={(e) => e.key === 'Enter' && !isLoading && searchInput.trim() && handleSearch()}
+                  disabled={isLoading}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/30 font-mono focus:outline-none disabled:opacity-50"
+                />
+                {searchInput && !isLoading && (
+                  <button onClick={() => { setSearchInput(''); setError(null); }}>
+                    <span className="text-muted-foreground/40 hover:text-foreground transition-colors text-xs">×</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {error && (
-              <div className="border border-destructive/20 p-3 flex items-center gap-2" style={{ borderRadius: 'var(--radius-sm)' }}>
-                <AlertCircle className="w-4 h-4 text-destructive/60" />
-                <p className="text-[10px] md:text-xs font-medium text-destructive/80">{error}</p>
+            {(isLoading || error) && (
+              <div className="px-4 py-3 border-b border-border">
+                {isLoading && (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Resolving identity...</p>
+                  </div>
+                )}
+                {error && (
+                  <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{error}</p>
+                )}
               </div>
             )}
 
-            <button
-              onClick={() => handleSearch()}
-              disabled={isLoading || !searchInput.trim()}
-              className="flex w-full h-11 md:h-14 items-center justify-center gap-2 bg-foreground text-background transition-all hover:opacity-90 disabled:opacity-20 font-bold text-xs md:text-sm tracking-widest"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <TrendingUp className="h-4 w-4" />
-              <span>Inspect Funding</span>
-            </button>
+            <div className="p-3">
+              <button
+                onClick={() => handleSearch()}
+                disabled={isLoading || !searchInput.trim()}
+                className="w-full py-3 text-[11px] font-bold uppercase tracking-[0.2em] bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-25"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                {isLoading ? 'Inspecting...' : 'Inspect Funding'}
+              </button>
+            </div>
           </div>
+
+          <p className="mt-4 text-center text-[9px] text-muted-foreground/30 uppercase tracking-[0.2em]">
+            Funding data is fetched live from the SoDex API
+          </p>
         </div>
       </div>
     );

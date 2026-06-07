@@ -90,9 +90,10 @@ export function DexStatusDashboard({ onNavigate }: { onNavigate?: (page: string)
   const [userLoading, setUserLoading] = useState(true)
   const [tvl, setTvl] = useState<number>(0)
   const [tvlLoading, setTvlLoading] = useState(true)
-  const [vol24h, setVol24h] = useState<number>(0)
   const [vol7d, setVol7d] = useState<number>(0)
   const [volSummaryLoading, setVolSummaryLoading] = useState(true)
+  const [vol24hDirect, setVol24hDirect] = useState<number>(0)
+  const [vol24hDirectLoading, setVol24hDirectLoading] = useState(true)
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -112,12 +113,23 @@ export function DexStatusDashboard({ onNavigate }: { onNavigate?: (page: string)
       try {
         const res = await fetch('/api/sodex/volume-summary')
         const data = await res.json()
-        if (data.vol24h !== undefined) setVol24h(data.vol24h)
         if (data.vol7d !== undefined) setVol7d(data.vol7d)
       } catch {}
       finally { setVolSummaryLoading(false) }
     }
     fetchVolSummary()
+  }, [])
+
+  useEffect(() => {
+    const fetchVol24h = async () => {
+      try {
+        const res = await fetch('/api/sodex/volume-24h')
+        const data = await res.json()
+        if (data.vol24h !== undefined) setVol24hDirect(data.vol24h)
+      } catch {}
+      finally { setVol24hDirectLoading(false) }
+    }
+    fetchVol24h()
   }, [])
 
   useEffect(() => {
@@ -153,9 +165,6 @@ export function DexStatusDashboard({ onNavigate }: { onNavigate?: (page: string)
 
   const profitPct = overallStats?.summary?.profitable_percent ?? null
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
-
   return (
     <div className="space-y-0 animate-in fade-in duration-300">
 
@@ -174,9 +183,9 @@ export function DexStatusDashboard({ onNavigate }: { onNavigate?: (page: string)
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 w-6">24h</span>
               <div className="flex-1 h-px bg-border" />
-              {volSummaryLoading
+              {vol24hDirectLoading
                 ? <div className="h-3 w-14 bg-muted animate-pulse rounded" />
-                : <span className="text-[10px] font-bold text-foreground tabular-nums">${formatNumber(vol24h)}</span>
+                : <span className="text-[10px] font-bold text-foreground tabular-nums">${formatNumber(vol24hDirect)}</span>
               }
             </div>
             <div className="flex items-center gap-1.5">

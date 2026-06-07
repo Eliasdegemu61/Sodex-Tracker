@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Download, FileDown, X, Loader2, CheckCircle2, AlertCircle, RefreshCcw, Clock, Info, BarChart3, Timer } from 'lucide-react';
+import { Download, FileDown, X, Loader2, CheckCircle2, AlertCircle, RefreshCcw, Clock, Info, BarChart3, Timer, Search } from 'lucide-react';
 import { fetchSymbols, type SymbolData } from '@/lib/sodex-api';
 import { type RawTrade } from '@/lib/trade-export';
 import { useExport } from '@/context/export-context';
@@ -164,54 +164,57 @@ export function ExportTradeHistory() {
   const isWorking = status === 'resolving' || status === 'fetching' || status === 'building' || localBuilding;
 
   return (
-    <div className="space-y-6 pb-16 animate-in fade-in duration-500">
+    <div className="space-y-0 pb-16 animate-in fade-in duration-500">
       {/* Page Header */}
       <div className="pb-6 border-b border-border">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Trade History</h1>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em]">
-          Full CSV Export for Spot & Futures
-        </p>
+        <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 mb-1">SoDex Tracker</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" style={{ letterSpacing: '-0.04em' }}>Trade History</h1>
+        <p className="mt-1 text-sm text-muted-foreground/60">Full CSV Export for Spot & Futures</p>
       </div>
 
       {/* Minimal Notice */}
-      <div className="bg-secondary/5 border border-border/50 rounded-xl p-4 flex gap-4 items-start transition-colors">
-        <Info className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <div className="mt-6 border border-border bg-card p-4 sm:p-5 flex gap-4 items-start" style={{ borderRadius: 'var(--radius-md)' }}>
+        <Info className="w-3.5 h-3.5 text-muted-foreground/40 flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="text-[11px] font-bold text-foreground uppercase tracking-widest">Rate Limit Notice</p>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
+          <p className="text-[10px] font-bold text-foreground uppercase tracking-[0.18em]">Rate Limit Notice</p>
+          <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
             SoDex API has strict rate limits. We fetch 6 pages per minute (1 page every 10 seconds). For accounts with hundreds of thousands of trades, this can take several hours. Please do not close this tab once the export starts. You can browse other dashboard sections while the export continues in the background.
           </p>
         </div>
       </div>
 
       {/* Address Input */}
-      <div className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none space-y-6">
+      <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-5" style={{ borderRadius: 'var(--radius-md)' }}>
         <div className="space-y-2">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+          <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">
             Wallet Address
           </label>
-          <input
-            type="text"
-            placeholder="0x..."
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            disabled={isWorking}
-            className="w-full h-10 bg-secondary/5 border border-border rounded-lg px-3 font-mono text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-border/80 transition-all disabled:opacity-50"
-          />
+          <div className="flex items-center gap-2 px-3 py-2.5 border border-border bg-muted/20" style={{ borderRadius: 'var(--radius-sm)' }}>
+            <Search className="w-3.5 h-3.5 text-muted-foreground/40 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="0x..."
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              disabled={isWorking}
+              className="flex-1 bg-transparent font-mono text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none disabled:opacity-50"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button
             onClick={() => startExport('perps')}
             disabled={isWorking || !address.trim()}
             className={cn(
-              "h-11 rounded-lg font-bold text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 disabled:opacity-40",
+              "h-10 font-bold text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 disabled:opacity-25",
               status === 'fetching' && lastMarket === 'perps'
                 ? "bg-foreground text-background"
-                : "border border-border text-foreground hover:bg-secondary/10"
+                : "border border-border text-foreground hover:bg-muted/20"
             )}
+            style={{ borderRadius: 'var(--radius-sm)' }}
           >
-            <FileDown className="w-4 h-4" />
+            <FileDown className="w-3.5 h-3.5" />
             Export Futures History
           </button>
 
@@ -219,13 +222,14 @@ export function ExportTradeHistory() {
             onClick={() => startExport('spot')}
             disabled={isWorking || !address.trim()}
             className={cn(
-              "h-11 rounded-lg font-bold text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 disabled:opacity-40",
+              "h-10 font-bold text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 disabled:opacity-25",
               status === 'fetching' && lastMarket === 'spot'
                 ? "bg-foreground text-background"
-                : "border border-border text-foreground hover:bg-secondary/10"
+                : "border border-border text-foreground hover:bg-muted/20"
             )}
+            style={{ borderRadius: 'var(--radius-sm)' }}
           >
-            <FileDown className="w-4 h-4" />
+            <FileDown className="w-3.5 h-3.5" />
             Export Spot History
           </button>
         </div>
@@ -233,10 +237,10 @@ export function ExportTradeHistory() {
 
       {/* Progress / Status */}
       {isWorking && (
-        <div className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none space-y-4 animate-in fade-in duration-300">
+        <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-4 animate-in fade-in duration-300" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <Loader2 className="w-4 h-4 animate-spin text-foreground/40" />
               <div>
                 <p className="text-sm font-bold text-foreground">
                   {status === 'resolving' && 'Resolving wallet address…'}
@@ -244,8 +248,8 @@ export function ExportTradeHistory() {
                   {(status === 'building' || localBuilding) && 'Building CSV…'}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Clock className="w-3 h-3 text-muted-foreground" />
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                  <Clock className="w-3 h-3 text-muted-foreground/40" />
+                  <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">
                     {status === 'fetching' ? 'Throttled: 1 page / 10s. Background Active.' : 'Please wait'}
                   </p>
                 </div>
@@ -254,7 +258,8 @@ export function ExportTradeHistory() {
             {status !== 'done' && (
               <button
                 onClick={cancelExport}
-                className="h-8 px-3 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all flex items-center gap-1.5"
+                className="h-8 px-3 border border-border text-[10px] font-bold text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all flex items-center gap-1.5"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 <X className="w-3 h-3" />
                 Cancel
@@ -263,8 +268,8 @@ export function ExportTradeHistory() {
           </div>
 
           {status === 'fetching' && (
-            <div className="w-full h-1 bg-secondary/20 rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '100%' }} />
+            <div className="w-full h-px bg-border overflow-hidden">
+              <div className="h-full bg-foreground/40 animate-pulse" style={{ width: '100%' }} />
             </div>
           )}
         </div>
@@ -272,12 +277,12 @@ export function ExportTradeHistory() {
 
       {/* Done / Success State */}
       {status === 'done' && (
-        <div className="bg-background border border-emerald-500/20 rounded-xl p-6 sm:p-8 shadow-none space-y-4 animate-in fade-in duration-300">
+        <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-4 animate-in fade-in duration-300" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-foreground/40 flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-foreground">{resultMsg}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+              <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">
                 Fetching complete. Click below to download your CSV.
               </p>
             </div>
@@ -286,7 +291,8 @@ export function ExportTradeHistory() {
           <button
             onClick={handleDownload}
             disabled={localBuilding}
-            className="w-full h-11 bg-emerald-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+            className="w-full h-10 bg-foreground text-background font-bold text-[11px] uppercase tracking-[0.2em] hover:opacity-80 transition-opacity flex items-center justify-center gap-2 disabled:opacity-25"
+            style={{ borderRadius: 'var(--radius-sm)' }}
           >
             {localBuilding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Download CSV Now
@@ -296,30 +302,30 @@ export function ExportTradeHistory() {
 
       {/* Summary Stats Section (Appears when trades exist) */}
       {stats && (
-        <div className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none space-y-6 animate-in fade-in duration-500">
-          <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">Export Summary</h3>
+        <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-5 animate-in fade-in duration-500" style={{ borderRadius: 'var(--radius-md)' }}>
+          <div className="flex items-center gap-2 pb-4 border-b border-border">
+            <BarChart3 className="w-3.5 h-3.5 text-foreground/30" />
+            <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.18em]">Export Summary</h3>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Trades</p>
-              <p className="text-lg font-bold text-foreground tabular-nums">{stats.totalTrades.toLocaleString()}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="space-y-1.5">
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">Total Trades</p>
+              <p className="text-xl font-bold text-foreground tabular-nums stat-number">{stats.totalTrades.toLocaleString()}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Fees (USD)</p>
-              <p className="text-lg font-bold text-foreground tabular-nums">${stats.totalFees.toFixed(2)}</p>
+            <div className="space-y-1.5">
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">Total Fees (USD)</p>
+              <p className="text-xl font-bold text-foreground tabular-nums stat-number">${stats.totalFees.toFixed(2)}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Volume (USD)</p>
-              <p className="text-lg font-bold text-foreground tabular-nums">${stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <div className="space-y-1.5">
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">Total Volume (USD)</p>
+              <p className="text-xl font-bold text-foreground tabular-nums stat-number">${stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Top Pairs</p>
-              <div className="flex flex-wrap gap-1.5 mt-1">
+            <div className="space-y-1.5">
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em]">Top Pairs</p>
+              <div className="flex flex-wrap gap-1 mt-1">
                 {stats.topPairs.map(([pair, count]) => (
-                  <span key={pair} className="px-2 py-0.5 bg-secondary/10 rounded text-[9px] font-bold text-muted-foreground uppercase">
+                  <span key={pair} className="px-2 py-0.5 border border-border text-[9px] font-bold text-muted-foreground/60 uppercase" style={{ borderRadius: 'var(--radius-sm)' }}>
                     {pair} ({count})
                   </span>
                 ))}
@@ -331,12 +337,12 @@ export function ExportTradeHistory() {
 
       {/* Error / Resume */}
       {status === 'error' && (
-        <div className="bg-background border border-red-500/20 rounded-xl p-6 sm:p-8 shadow-none space-y-4 animate-in fade-in duration-300">
+        <div className="mt-6 border border-border bg-card p-5 sm:p-6 space-y-4 animate-in fade-in duration-300" style={{ borderRadius: 'var(--radius-md)' }}>
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-destructive/60 flex-shrink-0" />
             <div>
               <p className="text-sm font-bold text-foreground">{error}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+              <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">
                 {collectedTrades.length > 0 
                   ? `${collectedTrades.length.toLocaleString()} trades saved. You can resume when ready.`
                   : 'Check the address and try again'}
@@ -348,17 +354,19 @@ export function ExportTradeHistory() {
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => startExport(lastMarket, true)}
-                className="w-full h-10 bg-red-500 text-white rounded-lg font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                className="w-full h-10 bg-destructive text-destructive-foreground font-bold text-[10px] uppercase tracking-[0.2em] hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
-                <RefreshCcw className="w-4 h-4" />
+                <RefreshCcw className="w-3.5 h-3.5" />
                 Resume Export ({collectedTrades.length.toLocaleString()} trades saved)
               </button>
               
               <button
                 onClick={handleDownload}
-                className="w-full h-10 border border-border text-foreground rounded-lg font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-secondary/10 transition-all flex items-center justify-center gap-2"
+                className="w-full h-10 border border-border text-foreground font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-muted/20 transition-all flex items-center justify-center gap-2"
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
                 Download Partial CSV
               </button>
             </div>
@@ -367,13 +375,13 @@ export function ExportTradeHistory() {
       )}
 
       {/* Info & Estimates */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none space-y-3 h-full">
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border" style={{ borderRadius: 'var(--radius-md)' }}>
+        <div className="p-5 sm:p-6 space-y-3 border-b lg:border-b-0 lg:border-r border-border">
           <div className="flex items-center gap-2 mb-2">
-            <Info className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">How it works</h3>
+            <Info className="w-3.5 h-3.5 text-foreground/30" />
+            <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.18em]">How it works</h3>
           </div>
-          <ul className="space-y-2 text-[11px] text-muted-foreground leading-relaxed">
+          <ul className="space-y-2 text-[11px] text-muted-foreground/60 leading-relaxed">
             <li className="flex items-start gap-2">
               <span className="text-muted-foreground/30 font-bold">1.</span>
               Strict mode: 6 requests per minute (1 every 10s) to respect SoDex limits.
@@ -393,30 +401,30 @@ export function ExportTradeHistory() {
           </ul>
         </div>
 
-        <div className="bg-background border border-border rounded-xl p-6 sm:p-8 shadow-none space-y-3 h-full">
+        <div className="p-5 sm:p-6 space-y-3">
           <div className="flex items-center gap-2 mb-2">
-            <Timer className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-widest">Time Estimates</h3>
+            <Timer className="w-3.5 h-3.5 text-foreground/30" />
+            <h3 className="text-[10px] font-bold text-foreground uppercase tracking-[0.18em]">Time Estimates</h3>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-[11px] border-b border-border/50 pb-1.5">
-              <span className="text-muted-foreground">1,000 trades</span>
+            <div className="flex items-center justify-between text-[11px] border-b border-border/40 pb-1.5">
+              <span className="text-muted-foreground/60">1,000 trades</span>
               <span className="font-bold text-foreground">~20 seconds</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] border-b border-border/50 pb-1.5">
-              <span className="text-muted-foreground">10,000 trades</span>
+            <div className="flex items-center justify-between text-[11px] border-b border-border/40 pb-1.5">
+              <span className="text-muted-foreground/60">10,000 trades</span>
               <span className="font-bold text-foreground">~3.3 minutes</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] border-b border-border/50 pb-1.5">
-              <span className="text-muted-foreground">100,000 trades</span>
+            <div className="flex items-center justify-between text-[11px] border-b border-border/40 pb-1.5">
+              <span className="text-muted-foreground/60">100,000 trades</span>
               <span className="font-bold text-foreground">~33 minutes</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] border-b border-border/50 pb-1.5">
-              <span className="text-muted-foreground">250,000 trades</span>
+            <div className="flex items-center justify-between text-[11px] border-b border-border/40 pb-1.5">
+              <span className="text-muted-foreground/60">250,000 trades</span>
               <span className="font-bold text-foreground">~1.4 hours</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-muted-foreground">1,000,000 trades</span>
+              <span className="text-muted-foreground/60">1,000,000 trades</span>
               <span className="font-bold text-foreground">~5.5 hours</span>
             </div>
           </div>
